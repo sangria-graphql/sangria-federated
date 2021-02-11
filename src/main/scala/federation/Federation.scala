@@ -8,11 +8,12 @@ object Federation {
   import Query._
 
   def federate[Ctx, Node](
-      schema: Schema[Ctx, Unit],
+      schema: Schema[Ctx, Any],
       um: InputUnmarshaller[Node],
       resolvers: EntityResolver[Ctx, Node]*
-  ): (Schema[Ctx, Unit], InputUnmarshaller[Node]) = {
+  ): (Schema[Ctx, Any], InputUnmarshaller[Node]) = (extend(schema, resolvers), upgrade(um))
 
+  def extend[Ctx, Node](schema: Schema[Ctx, Any], resolvers: Seq[EntityResolver[Ctx, Node]]) = {
     val resolversMap = resolvers.map(r => r.typename -> r).toMap
     val representationsArg = Argument("representations", ListInputType(_Any.__type[Node]))
 
@@ -20,7 +21,7 @@ object Federation {
       case obj: ObjectType[Ctx, _] @unchecked if obj.astDirectives.exists(_.name == "key") => obj
     }.toList
 
-    val extendedSchema = entities match {
+    (entities match {
       case Nil =>
         schema.extend(
           Document(definitions = Vector(queryType(_service))),
@@ -52,11 +53,7 @@ object Federation {
             AdditionalTypes(_Any.__type[Node], _Service.Type, _Entity(entities))
           )
         )
-    }
-
-    (
-      extendedSchema.copy(directives = Directives.definitions ::: extendedSchema.directives),
-      upgrade(um))
+    }).copy(directives = Directives.definitions ::: schema.directives)
   }
 
   def upgrade[Node](default: InputUnmarshaller[Node]): InputUnmarshaller[Node] =
