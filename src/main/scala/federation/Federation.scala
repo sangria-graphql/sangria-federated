@@ -64,7 +64,7 @@ object Federation {
       override def isMapNode(node: Node): Boolean = default.isMapNode(node)
       override def getMapValue(node: Node, key: String): Option[Node] =
         default.getMapValue(node, key)
-      override def getMapKeys(node: Node): Iterable[String] = default.getMapKeys(node)
+      override def getMapKeys(node: Node): Traversable[String] = default.getMapKeys(node)
 
       override def isListNode(node: Node): Boolean = default.isListNode(node)
       override def getListValue(node: Node): Seq[Node] = default.getListValue(node)
