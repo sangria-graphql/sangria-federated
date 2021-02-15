@@ -1,4 +1,4 @@
-package federation
+package sangria.federation
 
 case class _Any[Node](__typename: String, fields: NodeObject[Node])
 

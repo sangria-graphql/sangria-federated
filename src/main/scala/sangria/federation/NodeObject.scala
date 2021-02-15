@@ -1,4 +1,4 @@
-package federation
+package sangria.federation
 
 trait NodeObject[Node] {
 

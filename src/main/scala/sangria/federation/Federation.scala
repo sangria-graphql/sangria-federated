@@ -1,4 +1,4 @@
-package federation
+package sangria.federation
 
 import sangria.ast.Document
 import sangria.marshalling.InputUnmarshaller

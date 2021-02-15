@@ -1,4 +1,4 @@
-package federation
+package sangria.federation
 
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
