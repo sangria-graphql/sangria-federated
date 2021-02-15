@@ -43,7 +43,7 @@ class FederationSpec extends AnyFreeSpec {
           directive @requires on FIELD_DEFINITION
         """)
 
-      schema.compare(otherSchema).filter(_.isInstanceOf[DirectiveRemoved]) shouldBe empty
+      schema.compare(otherSchema).filter({ case _: DirectiveRemoved => true }) shouldBe empty
     }
   }
 }
