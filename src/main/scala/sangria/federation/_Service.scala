@@ -2,11 +2,11 @@ package sangria.federation
 
 import sangria.schema._
 
-case class _Service(sdl: String)
+case class _Service(sdl: Option[String])
 
 object _Service {
 
   val Type = ObjectType(
     name = "_Service",
-    fields[Unit, _Service](Field("sdl", StringType, resolve = _.value.sdl)))
+    fields[Unit, _Service](Field("sdl", OptionType(StringType), resolve = _.value.sdl)))
 }

@@ -27,8 +27,9 @@ object Federation {
           Document(definitions = Vector(queryType(_service))),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map(
-              "Query" -> Map("_service" -> (ctx => _Service(ctx.schema.renderPretty)))),
-            AdditionalTypes(_Any.__type[Node], _Service.Type))
+              "Query" -> Map("_service" -> (ctx => _Service(Some(ctx.schema.renderPretty))))),
+            AdditionalTypes(_Any.__type[Node], _Service.Type, _FieldSet.Type)
+          )
         )
       case entities =>
         schema.extend(
@@ -36,7 +37,7 @@ object Federation {
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map(
               "Query" -> Map(
-                "_service" -> (ctx => _Service(ctx.schema.renderPretty)),
+                "_service" -> (ctx => _Service(Some(ctx.schema.renderPretty))),
                 "_entities" -> (ctx =>
                   ctx.withArgs(representationsArg) { anys =>
                     Action.sequence(anys.map { any =>
@@ -50,7 +51,7 @@ object Federation {
                   })
               )
             ),
-            AdditionalTypes(_Any.__type[Node], _Service.Type, _Entity(entities))
+            AdditionalTypes(_Any.__type[Node], _Service.Type, _Entity(entities), _FieldSet.Type)
           )
         )
     }).copy(directives = Directives.definitions ::: schema.directives)

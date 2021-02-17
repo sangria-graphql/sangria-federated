@@ -17,8 +17,20 @@ object Directives {
     Directive(
       name = "extends",
       locations = Set(DirectiveLocation.Object, DirectiveLocation.Interface)),
-    Directive(name = "requires", locations = Set(DirectiveLocation.FieldDefinition)),
-    Directive(name = "provides", locations = Set(DirectiveLocation.FieldDefinition))
+    Directive(
+      name = "requires",
+      arguments = Argument(
+        name = "fields",
+        argumentType = _FieldSet.Type
+      ) :: Nil,
+      locations = Set(DirectiveLocation.FieldDefinition)),
+    Directive(
+      name = "provides",
+      arguments = Argument(
+        name = "fields",
+        argumentType = _FieldSet.Type
+      ) :: Nil,
+      locations = Set(DirectiveLocation.FieldDefinition))
   )
 
   object Key {

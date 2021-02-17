@@ -2,48 +2,62 @@ package sangria.federation
 
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+import sangria.ast.Document
 import sangria.macros.LiteralGraphQLStringContext
 import sangria.schema.Schema
-import sangria.schema.SchemaChange.DirectiveRemoved
+import sangria.schema.SchemaChange.AbstractChange
 
 class FederationSpec extends AnyFreeSpec {
 
   "federation schema" - {
-    "should include the following directives" in {
-      val schema = Federation.extend(
-        Schema.buildFromAst(graphql"""
-          schema {
-            query: Query
-          }
+    "should respect Apollo specification" - {
+      "in case no entity is defined" in {
+        val schema = Federation.extend(
+          Schema.buildFromAst(graphql"""
+            schema {
+              query: Query
+            }
 
-          type Query {
-            field: Int
-          }
-        """),
-        Nil
-      )
+            type Query {
+              field: Int
+            }
+          """),
+          Nil
+        )
 
-      val otherSchema = Schema.buildFromAst(graphql"""
-          schema {
-            query: Query
-          }
+        val otherSchema = Schema
+          .buildFromAst(graphql"""
+            schema {
+              query: Query
+            }
 
-          type Query {
-            field: Int
-          }
+            type Query {
+              field: Int
+              _service: _Service!
+            }
 
-          directive @extends on INTERFACE | OBJECT
+            scalar _FieldSet
 
-          directive @external on FIELD_DEFINITION
+            scalar _Any
 
-          directive @key(fields: String!) on INTERFACE | OBJECT
+            type _Service {
+              sdl: String
+            }
 
-          directive @provides on FIELD_DEFINITION
+            directive @extends on INTERFACE | OBJECT
 
-          directive @requires on FIELD_DEFINITION
-        """)
+            directive @external on FIELD_DEFINITION
 
-      schema.compare(otherSchema).collect({ case _: DirectiveRemoved => true }) shouldBe empty
+            directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
+
+            directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
+
+            directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
+          """)
+          .extend(Document(Vector(_FieldSet.Type.toAst)))
+
+        schema.compare(otherSchema).collect({ case _: AbstractChange => true }) shouldBe empty
+      }
     }
   }
 }
