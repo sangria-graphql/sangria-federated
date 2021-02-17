@@ -20,7 +20,10 @@ javacOptions ++= Seq("-source", "8", "-target", "8")
 
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "2.1.0",
-  "org.scalatest" %% "scalatest" % "3.2.2" % Test
+  "org.scalatest" %% "scalatest" % "3.2.2" % Test,
+  "io.circe" %% "circe-generic" % "0.13.0" % Test,
+  "io.circe" %% "circe-parser" % "0.13.0" % Test,
+  "org.sangria-graphql" %% "sangria-circe" % "1.3.1" % Test,
 )
 
 // Publishing
