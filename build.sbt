@@ -46,7 +46,7 @@ lazy val root = (project in file("."))
       "org.scalatest" %% "scalatest" % "3.2.2" % Test,
       "io.circe" %% "circe-generic" % "0.13.0" % Test,
       "io.circe" %% "circe-parser" % "0.13.0" % Test,
-      "org.sangria-graphql" %% "sangria-circe" % "1.3.1" % Test,
+      "org.sangria-graphql" %% "sangria-circe" % "1.3.1" % Test
     )
   )
 
@@ -55,7 +55,8 @@ lazy val root = (project in file("."))
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 val serviceDependencies = Seq(
-  "io.circe" %% "circe-generic" % "0.13.0",
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "io.circe" %% "circe-generic" % "0.13.0"
 )
 
 // GraphQL Services
