@@ -1,13 +1,21 @@
 package sangria.federation
 
-import org.scalatest.freespec.AnyFreeSpec
+import scala.util.Success
+
+import io.circe.Json
+import io.circe.generic.semiauto._
+import io.circe.parser._
+import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers._
 import sangria.ast.Document
+import sangria.execution.{Executor, VariableCoercionError}
 import sangria.macros.LiteralGraphQLStringContext
 import sangria.schema.Schema
 import sangria.schema.SchemaChange.AbstractChange
+import sangria.parser.QueryParser
+import sangria.schema._
 
-class FederationSpec extends AnyFreeSpec {
+class FederationSpec extends AsyncFreeSpec {
 
   "federation schema" - {
     "should respect Apollo specification" - {
@@ -118,6 +126,92 @@ class FederationSpec extends AnyFreeSpec {
           .extend(Document(Vector(_FieldSet.Type.toAst)))
 
         schema.compare(otherSchema).collect({ case _: AbstractChange => true }) shouldBe empty
+      }
+    }
+
+    "Apollo gateway queries" - {
+
+      case class State(id: Int, value: String)
+      case class StateArg(id: Int)
+
+      implicit val decoder: Decoder[Json, StateArg] = deriveDecoder[StateArg].decodeJson(_)
+
+      val stateResolver = EntityResolver[Any, Json, State, StateArg](
+        __typeName = "State",
+        arg => Some(State(arg.id, "mock")))
+
+      val schema = Federation.extend(
+        Schema.buildFromAst(
+          graphql"""
+             schema {
+               query: Query
+             }
+
+             type Query {
+               states: [State]
+             }
+
+             type State @key(fields: "id") {
+               id: Int
+               value: String
+             }
+           """,
+          AstSchemaBuilder.resolverBased[Any](
+            FieldResolver.map(
+              "Query" -> Map(
+                "states" -> (ctx => Nil)
+              )
+            ),
+            FieldResolver.map(
+              "State" -> Map(
+                "id" -> (ctx => ctx.value.asInstanceOf[State].id),
+                "value" -> (ctx => ctx.value.asInstanceOf[State].value)
+              ))
+          )
+        ),
+        stateResolver :: Nil
+      )
+
+      val Success(query) = QueryParser.parse("""
+         query FetchState($representations: [_Any!]!) {
+           _entities(representations: $representations) {
+             ... on State {
+               id
+               value
+             }
+           }
+         }
+         """)
+
+      val args: Json = parse(""" { "representations": [{ "__typename": "State", "id": 1 }] } """)
+        .getOrElse(Json.Null)
+
+      import sangria.marshalling.queryAst.queryAstResultMarshaller
+
+      "should succeed on federated unmarshaller" in {
+
+        implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
+
+        Executor
+          .execute(schema, query, variables = args)
+          .map(_.renderPretty should be("""{
+              |  data: {
+              |    _entities: [{
+              |      id: 1
+              |      value: "mock"
+              |    }]
+              |  }
+              |}""".stripMargin))
+      }
+
+      "should fail on regular unmarshaller" in {
+
+        implicit val um = sangria.marshalling.circe.CirceInputUnmarshaller
+
+        recoverToSucceededIf[VariableCoercionError] {
+          Executor
+            .execute(schema, query, variables = args)
+        }
       }
     }
   }
