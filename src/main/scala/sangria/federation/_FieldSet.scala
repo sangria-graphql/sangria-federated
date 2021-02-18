@@ -1,10 +1,10 @@
 package sangria.federation
 
-import sangria.schema.{ScalarAlias, StringType}
+import sangria.schema.StringType
 
 case class _FieldSet(fields: String)
 
 object _FieldSet {
 
-  val Type = ScalarAlias[_FieldSet, String](StringType, _.fields, str => Right(_FieldSet(str)))
+  val Type = StringType.rename("_FieldSet").copy(description = None)
 }
