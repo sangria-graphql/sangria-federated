@@ -1,21 +1,19 @@
 package sangria.federation
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.util.Success
 
 import io.circe.Json
 import io.circe.generic.semiauto._
 import io.circe.parser._
-import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers._
-import sangria.execution.Executor
+import sangria.execution.{Executor, VariableCoercionError}
 import sangria.macros.LiteralGraphQLStringContext
 import sangria.parser.QueryParser
 import sangria.schema._
 import sangria.schema.SchemaChange.DirectiveRemoved
 
-class FederationSpec extends AnyFreeSpec {
+class FederationSpec extends AsyncFreeSpec {
 
   "federation schema" - {
     "should include the following directives" in {
@@ -55,7 +53,7 @@ class FederationSpec extends AnyFreeSpec {
       schema.compare(otherSchema).collect({ case _: DirectiveRemoved => true }) shouldBe empty
     }
 
-    "should be able to answer Apollo gateway queries" in {
+    "Apollo gateway queries" - {
 
       case class State(id: Int, value: String)
       case class StateArg(id: Int)
@@ -112,24 +110,33 @@ class FederationSpec extends AnyFreeSpec {
       val args: Json = parse(""" { "representations": [{ "__typename": "State", "id": 1 }] } """)
         .getOrElse(Json.Null)
 
-      import scala.concurrent.ExecutionContext.Implicits.global
       import sangria.marshalling.queryAst.queryAstResultMarshaller
 
-      implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
+      "should succeed on federated unmarshaller" in {
 
-      val result = Await.result(
+        implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
+
         Executor
-          .execute(schema, query, variables = args),
-        10.seconds)
+          .execute(schema, query, variables = args)
+          .map(_.renderPretty should be("""{
+              |  data: {
+              |    _entities: [{
+              |      id: 1
+              |      value: "mock"
+              |    }]
+              |  }
+              |}""".stripMargin))
+      }
 
-      result.renderPretty should be("""{
-        |  data: {
-        |    _entities: [{
-        |      id: 1
-        |      value: "mock"
-        |    }]
-        |  }
-        |}""".stripMargin)
+      "should fail on regular unmarshaller" in {
+
+        implicit val um = sangria.marshalling.circe.CirceInputUnmarshaller
+
+        recoverToSucceededIf[VariableCoercionError] {
+          Executor
+            .execute(schema, query, variables = args)
+        }
+      }
     }
   }
 }
