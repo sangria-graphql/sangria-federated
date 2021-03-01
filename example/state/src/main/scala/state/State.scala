@@ -7,17 +7,17 @@ import sangria.schema._
 
 case class State(id: Int, key: String, value: String)
 
-object State {
+object StateGraphQLSchema {
 
   case class StateArg(id: Int)
 
   implicit val decoder: Decoder[Json, StateArg] = deriveDecoder[StateArg].decodeJson(_)
 
-  def stateResolver(env: StateEnv) = EntityResolver[StateEnv, Json, State, StateArg](
+  def stateResolver(env: StateService) = EntityResolver[StateService, Json, State, StateArg](
     __typeName = "State",
-    arg => env.service.getState(arg.id))
+    arg => env.getState(arg.id))
 
-  implicit val stateSchema =
+  implicit val schema =
     ObjectType(
       "State",
       fields[Unit, State](

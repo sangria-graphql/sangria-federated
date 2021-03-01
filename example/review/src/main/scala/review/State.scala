@@ -4,11 +4,11 @@ import sangria.schema._
 
 case class State(id: Int)
 
-object State {
+object StateGraphQLSchema {
 
   import sangria.federation.Directives._
 
-  implicit val stateSchema =
+  implicit val schema =
     ObjectType(
       "State",
       fields[Unit, State](

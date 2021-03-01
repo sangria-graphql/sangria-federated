@@ -6,9 +6,9 @@ object ReviewAPI {
 
   val Query = ObjectType(
     "Query",
-    fields[ReviewEnv, Any](
+    fields[ReviewService, Any](
       Field(
         name = "reviews",
-        fieldType = ListType(Review.reviewSchema),
-        resolve = _.ctx.service.getReviews)))
+        fieldType = ListType(ReviewGraphQLSchema.schema),
+        resolve = _.ctx.getReviews)))
 }

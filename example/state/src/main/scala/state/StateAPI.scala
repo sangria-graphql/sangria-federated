@@ -6,9 +6,9 @@ object StateAPI {
 
   val Query = ObjectType(
     "Query",
-    fields[StateEnv, Any](
+    fields[StateService, Any](
       Field(
         name = "states",
-        fieldType = ListType(State.stateSchema),
-        resolve = _.ctx.service.getStates)))
+        fieldType = ListType(StateGraphQLSchema.schema),
+        resolve = _.ctx.getStates)))
 }

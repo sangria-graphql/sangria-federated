@@ -9,10 +9,10 @@ import sangria.schema.Schema
 
 object Main extends IOApp {
 
-  val env = ReviewEnv.inMemory
+  val env = ReviewService.inMemory
 
   def graphQL[F[_]: Effect]: GraphQL[F] = {
-    val (schema, um) = Federation.federate[ReviewEnv, Json](
+    val (schema, um) = Federation.federate[ReviewService, Json](
       Schema(ReviewAPI.Query),
       sangria.marshalling.circe.CirceInputUnmarshaller)
 

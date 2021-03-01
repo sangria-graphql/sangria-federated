@@ -9,12 +9,12 @@ import sangria.schema.Schema
 
 object Main extends IOApp {
 
-  import State._
+  import StateGraphQLSchema._
 
-  val env = StateEnv.inMemory
+  val env = StateService.inMemory
 
   def graphQL[F[_]: Effect]: GraphQL[F] = {
-    val (schema, um) = Federation.federate[StateEnv, Json](
+    val (schema, um) = Federation.federate[StateService, Json](
       Schema(StateAPI.Query),
       sangria.marshalling.circe.CirceInputUnmarshaller,
       stateResolver(env))
