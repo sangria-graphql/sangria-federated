@@ -1,16 +1,14 @@
-package core
+package review
 
 import sangria.schema._
-
-import ReviewService.ReviewService
 
 object ReviewAPI {
 
   val Query = ObjectType(
     "Query",
-    fields[ReviewService, Any](
+    fields[ReviewEnv, Any](
       Field(
         name = "reviews",
         fieldType = ListType(Review.reviewSchema),
-        resolve = _.ctx.getReviews)))
+        resolve = _.ctx.service.getReviews)))
 }

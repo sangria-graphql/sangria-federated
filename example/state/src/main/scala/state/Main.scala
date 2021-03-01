@@ -1,19 +1,23 @@
-package core
+package state
 
 import cats.effect._
 import cats.implicits._
+import common.{GraphQL, Server}
 import io.circe.Json
 import sangria.federation.Federation
 import sangria.schema.Schema
 
 object Main extends IOApp {
 
-  val env = ReviewService.inMemory
+  import State._
+
+  val env = StateEnv.inMemory
 
   def graphQL[F[_]: Effect]: GraphQL[F] = {
-    val (schema, um) = Federation.federate[ReviewService.ReviewService, Json](
-      Schema(ReviewAPI.Query),
-      sangria.marshalling.circe.CirceInputUnmarshaller)
+    val (schema, um) = Federation.federate[StateEnv, Json](
+      Schema(StateAPI.Query),
+      sangria.marshalling.circe.CirceInputUnmarshaller,
+      stateResolver(env))
 
     GraphQL(schema, env.pure[F])(implicitly[Effect[F]], um)
   }
@@ -21,6 +25,6 @@ object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] =
     (for {
       blocker <- Blocker[IO]
-      server <- Server.resource[IO](graphQL, blocker, 9082)
+      server <- Server.resource[IO](graphQL, blocker, 9081)
     } yield server).use(_ => IO.never.as(ExitCode.Success))
 }

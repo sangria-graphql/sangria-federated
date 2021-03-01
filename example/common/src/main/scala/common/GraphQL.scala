@@ -1,4 +1,4 @@
-package core
+package common
 
 import scala.util.{Failure, Success}
 

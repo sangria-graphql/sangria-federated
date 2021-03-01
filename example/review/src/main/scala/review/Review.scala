@@ -1,4 +1,4 @@
-package core
+package review
 
 import sangria.schema._
 

@@ -1,4 +1,4 @@
-package core
+package common
 
 import cats.effect._
 import cats.implicits._

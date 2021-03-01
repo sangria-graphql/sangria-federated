@@ -1,6 +1,5 @@
-package core
+package state
 
-import core.StateService.StateService
 import sangria.federation._
 import io.circe.Json
 import io.circe.generic.semiauto._
@@ -14,9 +13,9 @@ object State {
 
   implicit val decoder: Decoder[Json, StateArg] = deriveDecoder[StateArg].decodeJson(_)
 
-  def stateResolver(env: StateService) = EntityResolver[StateService, Json, State, StateArg](
+  def stateResolver(env: StateEnv) = EntityResolver[StateEnv, Json, State, StateArg](
     __typeName = "State",
-    arg => env.getState(arg.id))
+    arg => env.service.getState(arg.id))
 
   implicit val stateSchema =
     ObjectType(
