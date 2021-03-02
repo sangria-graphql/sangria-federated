@@ -39,60 +39,77 @@ ThisBuild / githubWorkflowPublish := Seq(
   )
 )
 
-// scalacOptions, javacOptions
-ThisBuild / scalacOptions ++= Seq("-deprecation", "-feature")
-ThisBuild / scalacOptions += "-target:jvm-1.8"
-ThisBuild / javacOptions ++= Seq("-source", "8", "-target", "8")
+lazy val modules: List[ProjectReference] = List(
+  core,
+  exampleCommon,
+  exampleReview,
+  exampleState
+)
 
-// sangria-federated
 lazy val root = (project in file("."))
-  .withId("sangria-federated")
+  .settings(
+    name := "sangria-federated",
+    description := "Federation for Sangria"
+  )
+  .settings(noPublishSettings)
+  .aggregate(modules: _*)
+
+lazy val core = libraryProject("core")
   .settings(
     name := "sangria-federated",
     description := "Sangria federated",
+    libraryDependencies += Dependencies.sangria,
     libraryDependencies ++= Seq(
-      "org.sangria-graphql" %% "sangria" % "2.1.0",
-      "org.scalatest" %% "scalatest" % "3.2.2" % Test,
-      "io.circe" %% "circe-generic" % "0.13.0" % Test,
-      "io.circe" %% "circe-parser" % "0.13.0" % Test,
-      "org.sangria-graphql" %% "sangria-circe" % "1.3.1" % Test
+      Dependencies.scalaTest,
+      Dependencies.circeGeneric,
+      Dependencies.circeParser,
+      Dependencies.sangriaCirce
+    ).map(_ % Test)
+  )
+
+lazy val exampleReview = exampleProject("example-review")
+  .dependsOn(core, exampleCommon)
+  .settings(libraryDependencies ++= serviceDependencies)
+
+lazy val exampleState = exampleProject("example-state")
+  .dependsOn(core, exampleCommon)
+  .settings(libraryDependencies ++= serviceDependencies)
+
+lazy val serviceDependencies = Seq(
+  Dependencies.logbackClassic,
+  Dependencies.circeGeneric
+)
+
+lazy val exampleCommon = exampleProject("example-common")
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependencies.catsEffect,
+      Dependencies.http4sBlazeServer,
+      Dependencies.http4sCirce,
+      Dependencies.http4sDsl,
+      Dependencies.circeOptics,
+      Dependencies.sangria,
+      Dependencies.sangriaCirce
     )
   )
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Example
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def libraryProject(name: String) = newProject(name)
 
-val serviceDependencies = Seq(
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "io.circe" %% "circe-generic" % "0.13.0"
+def exampleProject(name: String) =
+  newProject(name)
+    .in(file(name.replace("example-", "example/")))
+    .settings(noPublishSettings)
+
+def newProject(name: String) =
+  Project(name, file(name))
+    .settings(commonSettings)
+
+lazy val commonSettings = Seq(
+  scalacOptions ++= Seq("-deprecation", "-feature"),
+  scalacOptions += "-target:jvm-1.8",
+  javacOptions ++= Seq("-source", "8", "-target", "8")
 )
 
-// GraphQL example services
-lazy val review = (project in file("example/review"))
-  .dependsOn(root, common)
-  .settings(
-    publish / skip := true,
-    libraryDependencies ++= serviceDependencies
-  )
-
-lazy val state = (project in file("example/state"))
-  .dependsOn(root, common)
-  .settings(
-    publish / skip := true,
-    libraryDependencies ++= serviceDependencies
-  )
-
-// GraphQL examples common code
-lazy val common = (project in file("example/common")).settings(
-  publish / skip := true,
-  libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-effect" % "2.2.0",
-    "org.http4s" %% "http4s-blaze-server" % "0.21.8",
-    "org.http4s" %% "http4s-circe" % "0.21.8",
-    "org.http4s" %% "http4s-dsl" % "0.21.8",
-    "io.circe" %% "circe-optics" % "0.13.0",
-    "org.sangria-graphql" %% "sangria" % "2.1.0",
-    "org.sangria-graphql" %% "sangria-circe" % "1.3.1"
-  )
+lazy val noPublishSettings = Seq(
+  publish / skip := true
 )
