@@ -1,97 +1,115 @@
 // About
-ThisBuild / organization := "org.sangria-graphql"
-ThisBuild / startYear := Some(2021)
-ThisBuild / organizationHomepage := Some(url("https://github.com/sangria-graphql"))
-ThisBuild / developers := List(
-  Developer("xsoufiane", "Soufiane Maguerra", "", url("https://github.com/xsoufiane")),
-  Developer("yanns", "Yann Simon", "", url("https://github.com/yanns")))
-ThisBuild / scmInfo := Some(
-  ScmInfo(
-    browseUrl = url("https://github.com/sangria-graphql/sangria-federated.git"),
-    connection = "scm:git:git@github.com:sangria-graphql/sangria-federated.git"
-  ))
+inThisBuild(
+  List(
+    organization := "org.sangria-graphql",
+    homepage := Some(url("https://github.com/sangria-graphql/sangria-federated/")),
+    licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    developers := List(
+      Developer("xsoufiane", "Soufiane Maguerra", "", url("https://github.com/xsoufiane")),
+      Developer("yanns", "Yann Simon", "", url("https://github.com/yanns"))),
+    scmInfo := Some(
+      ScmInfo(
+        browseUrl = url("https://github.com/sangria-graphql/sangria-federated.git"),
+        connection = "scm:git:git@github.com:sangria-graphql/sangria-federated.git"
+      ))
+  )
+)
 
 // Build
 ThisBuild / crossScalaVersions := Seq("2.12.13", "2.13.5")
 ThisBuild / scalaVersion := crossScalaVersions.value.last
-ThisBuild / githubWorkflowPublishTargetBranches := List()
 ThisBuild / githubWorkflowBuildPreamble ++= List(
   WorkflowStep.Sbt(List("scalafmtCheckAll"), name = Some("Check formatting"))
 )
 
-// scalacOptions, javacOptions
-ThisBuild / scalacOptions ++= Seq("-deprecation", "-feature")
-ThisBuild / scalacOptions += "-target:jvm-1.8"
-ThisBuild / javacOptions ++= Seq("-source", "8", "-target", "8")
+// Release
+ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
+ThisBuild / githubWorkflowPublishTargetBranches :=
+  Seq(RefPredicate.StartsWith(Ref.Tag("v")))
 
-// Publishing
-lazy val publishSettings = Seq(
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  releaseVcsSign := true,
-  publishMavenStyle := true,
-  publishArtifact in Test := false,
-  pomIncludeRepository := (_ => false),
-  publishTo := Some(
-    if (isSnapshot.value)
-      "snapshots".at("https://oss.sonatype.org/content/repositories/snapshots")
-    else
-      "releases".at("https://oss.sonatype.org/service/local/staging/deploy/maven2"))
+ThisBuild / githubWorkflowPublish := Seq(
+  WorkflowStep.Sbt(
+    List("ci-release"),
+    env = Map(
+      "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
+      "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
+      "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
+      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}"
+    )
+  )
 )
 
-// sangria-federated
+lazy val modules: List[ProjectReference] = List(
+  core,
+  exampleCommon,
+  exampleReview,
+  exampleState
+)
+
 lazy val root = (project in file("."))
-  .withId("sangria-federated")
-  .settings(publishSettings)
+  .settings(
+    name := "sangria-federated",
+    description := "Federation for Sangria"
+  )
+  .settings(noPublishSettings)
+  .aggregate(modules: _*)
+
+lazy val core = libraryProject("core")
   .settings(
     name := "sangria-federated",
     description := "Sangria federated",
-    homepage := Some(url("http://sangria-graphql.org")),
-    licenses := Seq(
-      "Apache License, ASL Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    libraryDependencies += Dependencies.sangria,
     libraryDependencies ++= Seq(
-      "org.sangria-graphql" %% "sangria" % "2.1.0",
-      "org.scalatest" %% "scalatest" % "3.2.2" % Test,
-      "io.circe" %% "circe-generic" % "0.13.0" % Test,
-      "io.circe" %% "circe-parser" % "0.13.0" % Test,
-      "org.sangria-graphql" %% "sangria-circe" % "1.3.1" % Test
+      Dependencies.scalaTest,
+      Dependencies.circeGeneric,
+      Dependencies.circeParser,
+      Dependencies.sangriaCirce
+    ).map(_ % Test)
+  )
+
+lazy val exampleReview = exampleProject("example-review")
+  .dependsOn(core, exampleCommon)
+  .settings(libraryDependencies ++= serviceDependencies)
+
+lazy val exampleState = exampleProject("example-state")
+  .dependsOn(core, exampleCommon)
+  .settings(libraryDependencies ++= serviceDependencies)
+
+lazy val serviceDependencies = Seq(
+  Dependencies.logbackClassic,
+  Dependencies.circeGeneric
+)
+
+lazy val exampleCommon = exampleProject("example-common")
+  .settings(
+    libraryDependencies ++= Seq(
+      Dependencies.catsEffect,
+      Dependencies.http4sBlazeServer,
+      Dependencies.http4sCirce,
+      Dependencies.http4sDsl,
+      Dependencies.circeOptics,
+      Dependencies.sangria,
+      Dependencies.sangriaCirce
     )
   )
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Example
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def libraryProject(name: String) = newProject(name)
 
-val serviceDependencies = Seq(
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "io.circe" %% "circe-generic" % "0.13.0"
+def exampleProject(name: String) =
+  newProject(name)
+    .in(file(name.replace("example-", "example/")))
+    .settings(noPublishSettings)
+
+def newProject(name: String) =
+  Project(name, file(name))
+    .settings(commonSettings)
+
+lazy val commonSettings = Seq(
+  scalacOptions ++= Seq("-deprecation", "-feature"),
+  scalacOptions += "-target:jvm-1.8",
+  javacOptions ++= Seq("-source", "8", "-target", "8")
 )
 
-// GraphQL Services
-lazy val review = (project in file("example/review"))
-  .dependsOn(root, common)
-  .settings(
-    publish / skip := true,
-    libraryDependencies ++= serviceDependencies
-  )
-
-lazy val state = (project in file("example/state"))
-  .dependsOn(root, common)
-  .settings(
-    publish / skip := true,
-    libraryDependencies ++= serviceDependencies
-  )
-
-// libs
-lazy val common = (project in file("example/common")).settings(
-  publish / skip := true,
-  libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-effect" % "2.2.0",
-    "org.http4s" %% "http4s-blaze-server" % "0.21.8",
-    "org.http4s" %% "http4s-circe" % "0.21.8",
-    "org.http4s" %% "http4s-dsl" % "0.21.8",
-    "io.circe" %% "circe-optics" % "0.13.0",
-    "org.sangria-graphql" %% "sangria" % "2.1.0",
-    "org.sangria-graphql" %% "sangria-circe" % "1.3.1"
-  )
+lazy val noPublishSettings = Seq(
+  publish / skip := true
 )
