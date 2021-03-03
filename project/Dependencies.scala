@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
   object V {
     val circe = "0.13.0"
-    val http4s = "0.21.19"
+    val http4s = "0.21.20"
   }
 
   val sangria = "org.sangria-graphql" %% "sangria" % "2.1.0"
