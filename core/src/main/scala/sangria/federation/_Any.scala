@@ -1,8 +1,8 @@
 package sangria.federation
 
-case class _Any[Node](__typename: String, fields: NodeObject[Node])
+private[federation] case class _Any[Node](__typename: String, fields: NodeObject[Node])
 
-object _Any {
+private[federation] object _Any {
 
   import sangria.schema.ScalarType
   import sangria.validation.ValueCoercionViolation
