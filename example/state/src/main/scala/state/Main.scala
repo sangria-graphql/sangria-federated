@@ -6,6 +6,7 @@ import common.{GraphQL, Server}
 import io.circe.Json
 import sangria.federation.Federation
 import sangria.schema.Schema
+import cats.effect.Resource
 
 object Main extends IOApp {
 
@@ -24,7 +25,7 @@ object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] =
     (for {
-      blocker <- Blocker[IO]
+      blocker <- Resource.unit[IO]
       server <- Server.resource[IO](graphQL, blocker, 9081)
     } yield server).use(_ => IO.never.as(ExitCode.Success))
 }

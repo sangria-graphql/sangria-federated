@@ -10,12 +10,12 @@ import org.http4s.headers.Location
 import org.http4s.implicits._
 import org.http4s.server.blaze._
 import org.http4s.server.Server
+import cats.effect.Temporal
 
 object Server {
 
-  def resource[F[_]: ConcurrentEffect: ContextShift: Timer](
+  def resource[F[_]: ConcurrentEffect: ContextShift: Temporal](
       graphQL: GraphQL[F],
-      blocker: Blocker,
       port: Int
   ): Resource[F, Server[F]] = {
 
