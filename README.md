@@ -207,6 +207,7 @@ As an example, let's consider an application using circe with a state and review
   
   In the end, the same code used to federate the state service is used to federate the review
   service.
+  
 
 - The sangria GraphQL services endpoints can now be configured in the ```serviceList``` of
   [Apollo's Gatewqay](https://www.apollographql.com/docs/federation/gateway/#setup) as follows:
@@ -220,7 +221,7 @@ As an example, let's consider an application using circe with a state and review
     })
     ```
 
-All the code of the example is available here.
+All the code of the example is available [here](./example).
 
 ## Caution 🚨🚨
 
