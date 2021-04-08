@@ -1,14 +1,21 @@
-**sangria-federated** is a library that allows sangria users to implement services that adhere to 
+![Sangria Logo](https://sangria-graphql.github.io/assets/img/sangria-logo.svg)
+
+# sangria-federated
+
+![Continuous Integration](https://github.com/sangria-graphql/sangria-federated/workflows/Continuous%20Integration/badge.svg)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-federated_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sangria-graphql/sangria-federated_2.13)
+[![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
+[![Scaladocs](https://www.javadoc.io/badge/org.sangria-graphql/sangria-federated_2.13.svg?label=docs)](https://www.javadoc.io/doc/org.sangria-graphql/sangria-federated_2.13)
+[![Join the chat at https://gitter.im/sangria-graphql/sangria](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sangria-graphql/sangria?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+**sangria-federated** is a library that allows sangria users to implement services that adhere to
 [Apollo's Federation Specification](https://www.apollographql.com/docs/federation/federation-spec/),
 and can be used as part of a federated data graph.
-
-[![License](http://img.shields.io/:license-Apache%202-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
-[![Join the chat at https://gitter.im/sangria-graphql/sangria](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sangria-graphql/sangria?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 SBT Configuration:
 
 ```scala
-libraryDependencies += "org.sangria-graphql" %% "sangria-federated" % "<latest version>"
+libraryDependencies += "org.sangria-graphql" %% "sangria-federated" % "0.0.1"
 ```
 
 ## How does it work?
@@ -217,7 +224,8 @@ All the code of the example is available here.
 
 ## Caution 🚨🚨
 
-The library upgrades the marshaller too, by making map values scalars (e.g. json objects as 
+- **This is a technology preview and should not be used in a production environment.**
+- The library upgrades the marshaller too, by making map values scalars (e.g. json objects as 
 scalars). This if not treated with caution, can lead to security issues as discussed [here](http://www.petecorey.com/blog/2017/06/12/graphql-nosql-injection-through-json-types/).
 
 ## Contribute

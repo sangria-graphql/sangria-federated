@@ -1,0 +1,2 @@
+alias start-all=all review/reStart state/reStart
+alias stop-all=all review/reStop state/reStop
