@@ -9,30 +9,31 @@
 [![Join the chat at https://gitter.im/sangria-graphql/sangria](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sangria-graphql/sangria?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 **sangria-federated** is a library that allows sangria users to implement services that adhere to
-[Apollo's Federation Specification](https://www.apollographql.com/docs/federation/federation-spec/),
-and can be used as part of a federated data graph.
+[Apollo's Federation Specification](https://www.apollographql.com/docs/federation/federation-spec/), and can be used as
+part of a federated data graph.
 
 SBT Configuration:
 
 ```scala
-libraryDependencies += "org.sangria-graphql" %% "sangria-federated" % "0.0.1"
+libraryDependencies += "org.sangria-graphql" %% "sangria-federated" % "latest.release"
 ```
 
 ## How does it work?
 
 The library adds [Apollo's Federation Specification](https://www.apollographql.com/docs/federation/federation-spec/)
-on top of the provided sangria graphql schema. And to make it possible to use *_Any* as a scalar,
-the library upgrades the marshaller used in the user application too.
+on top of the provided sangria graphql schema.
+
+To make it possible to use `_Any` as a scalar, the library upgrades the used marshaller.
 
 ## How to use it?
 
-To be able to communicate with [Apollo's federation gateway](https://www.apollographql.com/docs/federation/gateway/),
+To be able to communicate with [Apollo's federation gateway](https://www.apollographql.com/docs/federation/gateway/), 
 the graphql sangria service should be using both the federated schema and unmarshaller.
 
 As an example, let's consider an application using circe with a state and review service. 
-- The state service defines the state entity, annotated with ```@key("id")```. And for each entity, 
-  we need to define an entity resolver ([reference resolver](https://www.apollographql.com/docs/federation/entities/#resolving))
-  , see code below:
+- The state service defines the state entity, annotated with ```@key("id")```. And for each entity, we need to define an
+  entity resolver ([reference resolver](https://www.apollographql.com/docs/federation/entities/#resolving)), see code 
+  below:
     ```scala
     import sangria.federation.Decoder
     import io.circe.Json,  io.circe.generic.semiauto._
@@ -70,10 +71,11 @@ As an example, let's consider an application using circe with a state and review
         ).copy(astDirectives = Vector(federation.Directives.Key("id")))
     }
     ```
-    
-    The entity resolver, must include how to deserialize the fields in _Any object to the EntityArg.
-    And, how to use the EntityArg to get the proper Entity (in our case State).
   
+    The entity resolver implements:
+    - the deserialization of the fields in `_Any` object to the EntityArg.
+    - how to fetch the EntityArg to get the proper Entity (in our case State).
+    
     As for the query type, let's suppose the schema below:
     ```scala
     import sangria.schema._
@@ -89,10 +91,9 @@ As an example, let's consider an application using circe with a state and review
           resolve = _.ctx.getStates)))
     }
     ```
-    
-    Now in the definition of the GraphQL server, we federate the Query type and the unmarshaller 
-    while supplying the entity resolvers. Then, we use both the federated schema and unmarshaller as
-    arguments for the server.
+  
+    Now in the definition of the GraphQL server, we federate the Query type and the unmarshaller while supplying the
+    entity resolvers. Then, we use both the federated schema and unmarshaller as arguments for the server.
     ```scala
     def graphQL[F[_]: Effect]: GraphQL[F] = {
       val (schema, um) = federation.Federation.federate[StateService, Json](
@@ -106,8 +107,7 @@ As an example, let's consider an application using circe with a state and review
     }
     ```
   
-    And, the GraphQL server should use the provided schema and unmarshaller as arguments for the
-    sangria executor:
+    And, the GraphQL server should use the provided schema and unmarshaller as arguments for the sangria executor:
     ```scala
     import cats.effect._
     import cats.implicits._
@@ -158,10 +158,9 @@ As an example, let's consider an application using circe with a state and review
     }
     ```
   
-- The review service defines the review type, which has a reference to the state type. And, for each
-  entity referenced by another service, a [stub type](https://www.apollographql.com/docs/federation/entities/#referencing)
-  should be created (containing just the minimal information that will allow to reference
-  the entity).
+- The review service defines the review type, which has a reference to the state type. And, for each entity referenced
+  by another service, a [stub type](https://www.apollographql.com/docs/federation/entities/#referencing) should be 
+  created (containing just the minimal information that will allow to reference the entity).
   ```scala
   import sangria.schema._
   
@@ -205,12 +204,11 @@ As an example, let's consider an application using circe with a state and review
   }
   ```
   
-  In the end, the same code used to federate the state service is used to federate the review
-  service.
-  
+  In the end, the same code used to federate the state service is used to federate the review service.
 
-- The sangria GraphQL services endpoints can now be configured in the ```serviceList``` of
-  [Apollo's Gatewqay](https://www.apollographql.com/docs/federation/gateway/#setup) as follows:
+
+- The sangria GraphQL services endpoints can now be configured in the ```serviceList``` of [Apollo's Gatewqay](
+  https://www.apollographql.com/docs/federation/gateway/#setup) as follows:
     ```
     const gateway = new ApolloGateway({
       serviceList: [
@@ -220,19 +218,19 @@ As an example, let's consider an application using circe with a state and review
       debug: true
     })
     ```
-
+  
 All the code of the example is available [here](./example).
 
 ## Caution 🚨🚨
 
 - **This is a technology preview and should not be used in a production environment.**
-- The library upgrades the marshaller too, by making map values scalars (e.g. json objects as 
-scalars). This if not treated with caution, can lead to security issues as discussed [here](http://www.petecorey.com/blog/2017/06/12/graphql-nosql-injection-through-json-types/).
+- The library upgrades the marshaller too, by making map values scalars (e.g. json objects as scalars). This can lead to
+  security issues as discussed [here](
+  http://www.petecorey.com/blog/2017/06/12/graphql-nosql-injection-through-json-types/).
 
 ## Contribute
 
-Contributions are warmly desired 🤗; please follow the standard process of forking the repo and making
-PRs 🤓
+Contributions are warmly desired 🤗. Please follow the standard process of forking the repo and making PRs 🤓
 
 ## License
 
