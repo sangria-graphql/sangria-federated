@@ -55,7 +55,7 @@ As an example, let's consider an application using circe with a state and review
         ev = State.decoder,
         arg =>  env.getState(arg.id))
     
-      implicit val stateSchema =
+      val stateSchema =
         ObjectType(
           "State",
           fields[Unit, State](
@@ -171,7 +171,7 @@ As an example, let's consider an application using circe with a state and review
     
   object Review {
 
-    implicit val reviewSchema =
+    val reviewSchema =
       ObjectType(
         "Review",
         fields[Unit, Review](
@@ -192,7 +192,7 @@ As an example, let's consider an application using circe with a state and review
     
     import sangria.federation.Directives._
   
-    implicit val stateSchema =
+    val stateSchema =
       ObjectType(
         "State",
         fields[Unit, State](

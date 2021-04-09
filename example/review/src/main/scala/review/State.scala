@@ -8,7 +8,7 @@ object StateGraphQLSchema {
 
   import sangria.federation.Directives._
 
-  implicit val schema =
+  val schema =
     ObjectType(
       "State",
       fields[Unit, State](

@@ -6,7 +6,7 @@ case class Review(id: Int, key: Option[String] = None, state: State)
 
 object ReviewGraphQLSchema {
 
-  implicit val schema =
+  val schema =
     ObjectType(
       "Review",
       fields[Unit, Review](
