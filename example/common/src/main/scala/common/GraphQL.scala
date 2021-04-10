@@ -80,7 +80,7 @@ object GraphQL {
           variables: Json): F[Either[Json, Json]] =
         userContext
           .flatMap { ctx =>
-            F.async { (cb: Either[Throwable, Json] => Unit) =>
+            F.async_ { (cb: Either[Throwable, Json] => Unit) =>
               Executor
                 .execute(
                   schema = schema,
