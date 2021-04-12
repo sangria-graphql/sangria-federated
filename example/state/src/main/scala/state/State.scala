@@ -17,7 +17,7 @@ object StateGraphQLSchema {
     __typeName = "State",
     arg => env.getState(arg.id))
 
-  implicit val schema =
+  val schema =
     ObjectType(
       "State",
       fields[Unit, State](
