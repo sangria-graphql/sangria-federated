@@ -13,7 +13,7 @@
 SBT Configuration:
 
 ```scala
-libraryDependencies += "org.sangria-graphql" %% "sangria-federated" % "latest.release"
+libraryDependencies += "org.sangria-graphql" %% "sangria-federated" % "<latest version>"
 ```
 
 ## How does it work?
@@ -223,4 +223,3 @@ Contributions are warmly desired 🤗. Please follow the standard process of for
 ## License
 
 **sangria-federated** is licensed under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
-
