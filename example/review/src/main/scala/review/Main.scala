@@ -12,7 +12,7 @@ object Main extends IOApp {
   val env = ReviewService.inMemory
 
   def graphQL[F[_]: Effect]: GraphQL[F] = {
-    val (schema, um) = Federation.federate[ReviewService, Json](
+    val (schema, um) = Federation.federate[ReviewService, Any, Json](
       Schema(ReviewAPI.Query),
       sangria.marshalling.circe.CirceInputUnmarshaller)
 
