@@ -14,7 +14,7 @@ object Main extends IOApp {
   val env = StateService.inMemory
 
   def graphQL[F[_]: Effect]: GraphQL[F] = {
-    val (schema, um) = Federation.federate[StateService, Json](
+    val (schema, um) = Federation.federate[StateService, Any, Json](
       Schema(StateAPI.Query),
       sangria.marshalling.circe.CirceInputUnmarshaller,
       stateResolver(env))

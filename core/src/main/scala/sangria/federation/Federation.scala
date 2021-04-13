@@ -7,13 +7,15 @@ import sangria.schema._
 object Federation {
   import Query._
 
-  def federate[Ctx, Node](
-      schema: Schema[Ctx, Any],
+  def federate[Ctx, Val, Node](
+      schema: Schema[Ctx, Val],
       um: InputUnmarshaller[Node],
       resolvers: EntityResolver[Ctx, Node]*
-  ): (Schema[Ctx, Any], InputUnmarshaller[Node]) = (extend(schema, resolvers), upgrade(um))
+  ): (Schema[Ctx, Val], InputUnmarshaller[Node]) = (extend(schema, resolvers), upgrade(um))
 
-  def extend[Ctx, Node](schema: Schema[Ctx, Any], resolvers: Seq[EntityResolver[Ctx, Node]]) = {
+  def extend[Ctx, Val, Node](
+      schema: Schema[Ctx, Val],
+      resolvers: Seq[EntityResolver[Ctx, Node]]) = {
     val resolversMap = resolvers.map(r => r.typename -> r).toMap
     val representationsArg = Argument("representations", ListInputType(_Any.__type[Node]))
 
