@@ -13,11 +13,10 @@ import org.http4s.server.Server
 
 object Server {
 
-  def resource[F[_]: ConcurrentEffect: ContextShift: Timer](
+  def resource[F[_]: Async](
       graphQL: GraphQL[F],
-      blocker: Blocker,
       port: Int
-  ): Resource[F, Server[F]] = {
+  ): Resource[F, Server] = {
 
     object dsl extends Http4sDsl[F]
     import dsl._
@@ -31,7 +30,7 @@ object Server {
         }
       case GET -> Root / "playground" =>
         StaticFile
-          .fromResource[F]("/playground.html", blocker)
+          .fromResource[F]("/playground.html")
           .getOrElseF(NotFound())
 
       case _ =>

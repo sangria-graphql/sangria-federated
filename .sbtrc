@@ -1,2 +1,2 @@
-alias start-all=all review/reStart state/reStart
-alias stop-all=all review/reStop state/reStop
+alias start-all=all example-review/reStart example-state/reStart
+alias stop-all=all example-review/reStop example-state/reStop
