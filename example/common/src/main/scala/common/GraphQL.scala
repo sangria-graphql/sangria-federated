@@ -78,32 +78,29 @@ object GraphQL {
           query: Document,
           operationName: Option[String],
           variables: Json): F[Either[Json, Json]] =
-        userContext
-          .flatMap { ctx =>
-            F.async { (cb: Either[Throwable, Json] => Unit) =>
-              Executor
-                .execute(
-                  schema = schema,
-                  queryAst = query,
-                  userContext = ctx,
-                  variables = variables,
-                  operationName = operationName,
-                  exceptionHandler = ExceptionHandler { case (_, e) =>
-                    HandledException(e.getMessage)
-                  }
-                )
-                .onComplete {
-                  case Success(value) => cb(Right(value))
-                  case Failure(error) => cb(Left(error))
-                }
-            }
-          }
-          .attempt
-          .flatMap {
+        for {
+          ctx <- userContext
+          execution <- F.attempt(
+            F.fromFuture(
+              F.delay(
+                Executor
+                  .execute(
+                    schema = schema,
+                    queryAst = query,
+                    userContext = ctx,
+                    variables = variables,
+                    operationName = operationName,
+                    exceptionHandler = ExceptionHandler { case (_, e) =>
+                      HandledException(e.getMessage)
+                    }
+                  )
+              )))
+          result <- execution match {
             case Right(json) => F.pure(json.asRight)
             case Left(err: WithViolations) => fail(formatWithViolations(err))
             case Left(err) => fail(formatThrowable(err))
           }
+        } yield result
 
       def query(request: Json): F[Either[Json, Json]] = {
         val queryString = queryStringLens.getOption(request)

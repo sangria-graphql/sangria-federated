@@ -7,21 +7,17 @@ import io.circe.Json
 import sangria.federation.Federation
 import sangria.schema.Schema
 
-object Main extends IOApp {
+object Main extends IOApp.Simple {
 
   val env = ReviewService.inMemory
 
-  def graphQL[F[_]: Effect]: GraphQL[F] = {
+  def graphQL[F[_]: Async]: GraphQL[F] = {
     val (schema, um) = Federation.federate[ReviewService, Any, Json](
       Schema(ReviewAPI.Query),
       sangria.marshalling.circe.CirceInputUnmarshaller)
 
-    GraphQL(schema, env.pure[F])(implicitly[Effect[F]], um)
+    GraphQL(schema, env.pure[F])(Async[F], um)
   }
 
-  def run(args: List[String]): IO[ExitCode] =
-    (for {
-      blocker <- Blocker[IO]
-      server <- Server.resource[IO](graphQL, blocker, 9082)
-    } yield server).use(_ => IO.never.as(ExitCode.Success))
+  override def run: IO[Unit] = Server.resource[IO](graphQL, 9082).use(_ => IO.never)
 }
