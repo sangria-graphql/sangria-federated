@@ -1,5 +1,7 @@
 # Release process
 
+How to create a new [release](../../releases).
+
 ## Releasing
 
 The release process is automated thanks to:
@@ -18,6 +20,6 @@ Wait for the CI pipeline to release the new version. Publishing the artifacts on
 
 ## Updating the release notes
 
-Open the [releases](releases). A draft should already be prepared.
+Open the [releases](../../releases). A draft should already be prepared.
 
 Edit the draft release to set the released version. Complete the release notes if necessary. And save it.
