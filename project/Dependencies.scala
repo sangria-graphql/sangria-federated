@@ -6,7 +6,7 @@ object Dependencies {
     val http4s = "1.0.0-M21"
   }
 
-  val sangria = "org.sangria-graphql" %% "sangria" % "2.1.2"
+  val sangria = "org.sangria-graphql" %% "sangria" % "2.1.3"
   val sangriaCirce = "org.sangria-graphql" %% "sangria-circe" % "1.3.1"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
 
