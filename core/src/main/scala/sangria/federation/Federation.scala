@@ -23,13 +23,14 @@ object Federation {
       case obj: ObjectType[Ctx, _] @unchecked if obj.astDirectives.exists(_.name == "key") => obj
     }.toList
 
+    val sdl = Some(schema.renderPretty)
+
     (entities match {
       case Nil =>
         schema.extend(
           Document(definitions = Vector(queryType(_service))),
           AstSchemaBuilder.resolverBased[Ctx](
-            FieldResolver.map(
-              "Query" -> Map("_service" -> (ctx => _Service(Some(ctx.schema.renderPretty))))),
+            FieldResolver.map("Query" -> Map("_service" -> (_ => _Service(sdl)))),
             AdditionalTypes(_Any.__type[Node], _Service.Type, _FieldSet.Type)
           )
         )
@@ -39,7 +40,7 @@ object Federation {
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map(
               "Query" -> Map(
-                "_service" -> (ctx => _Service(Some(ctx.schema.renderPretty))),
+                "_service" -> (_ => _Service(sdl)),
                 "_entities" -> (ctx =>
                   ctx.withArgs(representationsArg) { anys =>
                     Action.sequence(anys.map { any =>
