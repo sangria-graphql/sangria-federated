@@ -129,6 +129,73 @@ class FederationSpec extends AsyncFreeSpec {
       }
     }
 
+    "_service sdl field should not include federation types" - {
+      import sangria.marshalling.queryAst.queryAstResultMarshaller
+
+      val Success(query) = QueryParser.parse("""
+          query {
+            _service {
+              sdl
+            }
+          }
+        """)
+
+      "in case no entity is defined" in {
+        val schema = Federation.extend(
+          Schema.buildFromAst(graphql"""
+              schema {
+                query: Query
+              }
+
+              type Query {
+                field: Int
+              }
+            """),
+          Nil
+        )
+
+        Executor
+          .execute(schema, query)
+          .map(_.renderPretty should be("""{
+              |  data: {
+              |    _service: {
+              |      sdl: "type Query {\n  field: Int\n}"
+              |    }
+              |  }
+              |}""".stripMargin))
+      }
+
+      "in case entities are defined" in {
+        val schema = Federation.extend(
+          Schema.buildFromAst(graphql"""
+            schema {
+              query: Query
+            }
+
+            type Query {
+              states: [State]
+            }
+
+            type State @key(fields: "id") {
+              id: Int
+              value: String
+            }
+          """),
+          Nil
+        )
+
+        Executor
+          .execute(schema, query)
+          .map(_.renderPretty should be("""{
+              |  data: {
+              |    _service: {
+              |      sdl: "type Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
+              |    }
+              |  }
+              |}""".stripMargin))
+      }
+    }
+
     "Apollo gateway queries" - {
 
       case class State(id: Int, value: String)
