@@ -9,7 +9,7 @@ inThisBuild(
       Developer("yanns", "Yann Simon", "", url("https://github.com/yanns"))),
     scmInfo := Some(
       ScmInfo(
-        browseUrl = url("https://github.com/sangria-graphql/sangria-federated.git"),
+        browseUrl = url("https://github.com/sangria-graphql/sangria-federated"),
         connection = "scm:git:git@github.com:sangria-graphql/sangria-federated.git"
       ))
   )
