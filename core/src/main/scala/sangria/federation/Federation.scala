@@ -2,6 +2,7 @@ package sangria.federation
 
 import sangria.ast.Document
 import sangria.marshalling.InputUnmarshaller
+import sangria.renderer.SchemaFilter
 import sangria.schema._
 
 object Federation {
@@ -23,7 +24,7 @@ object Federation {
       case obj: ObjectType[Ctx, _] @unchecked if obj.astDirectives.exists(_.name == "key") => obj
     }.toList
 
-    val sdl = Some(schema.renderPretty)
+    val sdl = Some(schema.renderPretty(SchemaFilter.withoutGraphQLBuiltIn))
 
     (entities match {
       case Nil =>

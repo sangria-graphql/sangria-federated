@@ -129,70 +129,98 @@ class FederationSpec extends AsyncFreeSpec {
       }
     }
 
-    "_service sdl field should not include federation types" - {
+    "_service sdl field" - {
       import sangria.marshalling.queryAst.queryAstResultMarshaller
 
       val Success(query) = QueryParser.parse("""
-          query {
-            _service {
-              sdl
+            query {
+              _service {
+                sdl
+              }
             }
-          }
-        """)
+          """)
 
-      "in case no entity is defined" in {
-        val schema = Federation.extend(
-          Schema.buildFromAst(graphql"""
+      "should not include federation types" - {
+        "in case no entity is defined" in {
+          val schema = Federation.extend(
+            Schema.buildFromAst(graphql"""
+                schema {
+                  query: Query
+                }
+
+                type Query {
+                  field: Int
+                }
+              """),
+            Nil
+          )
+
+          Executor
+            .execute(schema, query)
+            .map(_.renderPretty should be("""{
+                |  data: {
+                |    _service: {
+                |      sdl: "type Query {\n  field: Int\n}"
+                |    }
+                |  }
+                |}""".stripMargin))
+        }
+
+        "in case entities are defined" in {
+          val schema = Federation.extend(
+            Schema.buildFromAst(graphql"""
               schema {
                 query: Query
               }
 
               type Query {
-                field: Int
+                states: [State]
+              }
+
+              type State @key(fields: "id") {
+                id: Int
+                value: String
               }
             """),
-          Nil
-        )
+            Nil
+          )
 
-        Executor
-          .execute(schema, query)
-          .map(_.renderPretty should be("""{
-              |  data: {
-              |    _service: {
-              |      sdl: "type Query {\n  field: Int\n}"
-              |    }
-              |  }
-              |}""".stripMargin))
+          Executor
+            .execute(schema, query)
+            .map(_.renderPretty should be("""{
+                |  data: {
+                |    _service: {
+                |      sdl: "type Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
+                |    }
+                |  }
+                |}""".stripMargin))
+        }
       }
 
-      "in case entities are defined" in {
+      "should not filter Sangria built-in types and filter GraphQL built-in types" in {
         val schema = Federation.extend(
           Schema.buildFromAst(graphql"""
-            schema {
-              query: Query
-            }
+                schema {
+                  query: Query
+                }
 
-            type Query {
-              states: [State]
-            }
-
-            type State @key(fields: "id") {
-              id: Int
-              value: String
-            }
-          """),
+                type Query {
+                  foo: Long
+                  bar: Int
+                }
+              """),
           Nil
         )
 
         Executor
           .execute(schema, query)
           .map(_.renderPretty should be("""{
-              |  data: {
-              |    _service: {
-              |      sdl: "type Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
-              |    }
-              |  }
-              |}""".stripMargin))
+                |  data: {
+                |    _service: {
+                |      sdl: "\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
+                |    }
+                |  }
+                |}""".stripMargin))
       }
     }
 
