@@ -7,7 +7,7 @@ object Dependencies {
   }
 
   val sangria = "org.sangria-graphql" %% "sangria" % "2.1.3"
-  val sangriaCirce = "org.sangria-graphql" %% "sangria-circe" % "1.3.1"
+  val sangriaCirce = "org.sangria-graphql" %% "sangria-circe" % "1.3.2"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
 
   val catsEffect = "org.typelevel" %% "cats-effect" % "3.1.1"
