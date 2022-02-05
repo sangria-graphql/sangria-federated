@@ -19,6 +19,6 @@ object Dependencies {
   val circeParser = "io.circe" %% "circe-parser" % V.circe
   val circeOptics = "io.circe" %% "circe-optics" % V.circe
 
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.10"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.11"
 
 }
