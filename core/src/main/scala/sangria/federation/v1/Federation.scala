@@ -32,7 +32,7 @@ object Federation {
           Document(definitions = Vector(queryType(_service))),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map("Query" -> Map("_service" -> (_ => _Service(sdl)))),
-            AdditionalTypes(_Any.__type[Node], _Service.Type, _FieldSet.Type)
+            AdditionalTypes(_Any.__type[Node], Link__Import.Type, _Service.Type, _FieldSet.Type)
           )
         )
       case entities =>
@@ -55,7 +55,7 @@ object Federation {
                   })
               )
             ),
-            AdditionalTypes(_Any.__type[Node], _Service.Type, _Entity(entities), _FieldSet.Type)
+            AdditionalTypes(_Any.__type[Node], Link__Import.Type, _Service.Type, _Entity(entities), _FieldSet.Type)
           )
         )
     }).copy(directives = Directives.definitions ::: schema.directives)
@@ -88,13 +88,26 @@ object Federation {
       override def isScalarNode(node: Node): Boolean =
         default.isMapNode(node) || default.isScalarNode(node)
       override def getScalarValue(node: Node): Any =
-        if (default.isMapNode(node)) new NodeObject[Node] {
+        if (default.isMapNode(node)) {
+          if (getMapValue(node, "__typename").isDefined) {
+            new NodeObject[Node] {
 
-          override def __typename: Option[String] =
-            getMapValue(node, "__typename").map(node => getScalarValue(node).asInstanceOf[String])
+              override def __typename: Option[String] =
+                getMapValue(node, "__typename").map(node => getScalarValue(node).asInstanceOf[String])
 
-          override def decode[T](implicit ev: Decoder[Node, T]): Either[Exception, T] =
-            ev.decode(node)
+              override def decode[T](implicit ev: Decoder[Node, T]): Either[Exception, T] =
+                ev.decode(node)
+            }
+          } else {
+            getMapValue(node, "name") match {
+              case Some(name) if getScalaScalarValue(name).isInstanceOf[String] => getMapValue(node, "as") match {
+                case opt @ Some(as) if getScalaScalarValue(as).isInstanceOf[String] =>
+                  Link__Import_Object(name.asInstanceOf[String], opt.map(_.asInstanceOf[String]))
+                case _ => Link__Import_Object(name.asInstanceOf[String])
+              }
+              case None => default.getScalarValue(node)
+            }
+          }
         }
         else default.getScalarValue(node)
     }

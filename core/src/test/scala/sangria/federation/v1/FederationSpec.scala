@@ -48,6 +48,8 @@ class FederationSpec extends AsyncFreeSpec {
 
             scalar _Any
 
+            scalar link__Import
+
             type _Service {
               sdl: String
             }
@@ -108,6 +110,8 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _FieldSet
 
             scalar _Any
+
+            scalar link__Import
 
             type _Service {
               sdl: String
