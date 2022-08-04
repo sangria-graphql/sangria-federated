@@ -55,7 +55,12 @@ object Federation {
                   })
               )
             ),
-            AdditionalTypes(_Any.__type[Node], Link__Import.Type, _Service.Type, _Entity(entities), _FieldSet.Type)
+            AdditionalTypes(
+              _Any.__type[Node],
+              Link__Import.Type,
+              _Service.Type,
+              _Entity(entities),
+              _FieldSet.Type)
           )
         )
     }).copy(directives = Directives.definitions ::: schema.directives)
@@ -93,22 +98,34 @@ object Federation {
             new NodeObject[Node] {
 
               override def __typename: Option[String] =
-                getMapValue(node, "__typename").map(node => getScalarValue(node).asInstanceOf[String])
+                getMapValue(node, "__typename").map(node =>
+                  getScalarValue(node).asInstanceOf[String])
 
               override def decode[T](implicit ev: Decoder[Node, T]): Either[Exception, T] =
                 ev.decode(node)
             }
           } else {
             getMapValue(node, "name") match {
-              case Some(name) if getScalaScalarValue(name).isInstanceOf[String] => getMapValue(node, "as") match {
-                case opt @ Some(as) if getScalaScalarValue(as).isInstanceOf[String] =>
-                  Link__Import_Object(name.asInstanceOf[String], opt.map(_.asInstanceOf[String]))
-                case _ => Link__Import_Object(name.asInstanceOf[String])
-              }
-              case None => default.getScalarValue(node)
+              case Some(name) =>
+                getScalaScalarValue(name) match {
+                  case name: String =>
+                    getMapValue(node, "as") match {
+                      case Some(as) =>
+                        getScalaScalarValue(as) match {
+                          case as: String =>
+                            Link__Import_Object(name, Some(as))
+                          case _ => Link__Import_Object(name)
+                        }
+                      case None =>
+                        Link__Import_Object(name)
+                    }
+                  case _ =>
+                    default.getScalarValue(node)
+                }
+              case None =>
+                default.getScalarValue(node)
             }
           }
-        }
-        else default.getScalarValue(node)
+        } else default.getScalarValue(node)
     }
 }

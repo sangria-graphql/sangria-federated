@@ -61,6 +61,7 @@ lazy val core = libraryProject("core")
     libraryDependencies += Dependencies.sangria,
     libraryDependencies ++= Seq(
       Dependencies.scalaTest,
+      Dependencies.scalaMock,
       Dependencies.circeGeneric,
       Dependencies.circeParser,
       Dependencies.sangriaCirce
