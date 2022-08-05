@@ -1,6 +1,6 @@
 package state
 
-import sangria.federation._
+import sangria.federation.v1._
 import io.circe.Json
 import io.circe.generic.semiauto._
 import sangria.schema._

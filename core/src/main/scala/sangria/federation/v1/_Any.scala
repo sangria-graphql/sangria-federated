@@ -1,4 +1,4 @@
-package sangria.federation
+package sangria.federation.v1
 
 private[federation] case class _Any[Node](__typename: String, fields: NodeObject[Node])
 

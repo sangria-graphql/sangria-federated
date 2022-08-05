@@ -4,7 +4,7 @@ import cats.effect._
 import cats.implicits._
 import common.{GraphQL, Server}
 import io.circe.Json
-import sangria.federation.Federation
+import sangria.federation.v1.Federation
 import sangria.schema.Schema
 
 object Main extends IOApp.Simple {
