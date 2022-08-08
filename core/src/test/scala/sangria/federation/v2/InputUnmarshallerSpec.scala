@@ -1,9 +1,8 @@
-package sangria.federation
+package sangria.federation.v2
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
-
 import sangria.marshalling.InputUnmarshaller
 
 class InputUnmarshallerSpec extends AnyWordSpec with Matchers with MockFactory {

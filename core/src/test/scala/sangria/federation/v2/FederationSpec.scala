@@ -1,4 +1,4 @@
-package sangria.federation.v1
+package sangria.federation.v2
 
 import scala.util.Success
 
@@ -10,10 +10,9 @@ import org.scalatest.matchers.should.Matchers._
 import sangria.ast.Document
 import sangria.execution.{Executor, VariableCoercionError}
 import sangria.macros.LiteralGraphQLStringContext
-import sangria.schema.Schema
 import sangria.schema.SchemaChange.AbstractChange
 import sangria.parser.QueryParser
-import sangria.schema._
+import sangria.schema.{Schema, _}
 
 class FederationSpec extends AsyncFreeSpec {
 
@@ -47,6 +46,8 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _FieldSet
 
             scalar _Any
+
+            scalar link__Import
 
             type _Service {
               sdl: String
@@ -108,6 +109,8 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _FieldSet
 
             scalar _Any
+
+            scalar link__Import
 
             type _Service {
               sdl: String
