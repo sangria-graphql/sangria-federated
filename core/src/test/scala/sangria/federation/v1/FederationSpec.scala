@@ -1,4 +1,4 @@
-package sangria.federation
+package sangria.federation.v1
 
 import scala.util.Success
 

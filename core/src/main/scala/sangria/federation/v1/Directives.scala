@@ -1,7 +1,7 @@
-package sangria.federation
+package sangria.federation.v1
 
 import sangria.ast
-import sangria.schema._
+import sangria.schema.{Argument, Directive, DirectiveLocation}
 
 object Directives {
 
