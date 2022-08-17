@@ -1,35 +1,16 @@
-package sangria.federation.v2
+package sangria.federation.v2.unmarshaller
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
+import sangria.federation.v2.{Federation, Link__Import_Object}
 import sangria.marshalling.InputUnmarshaller
 
-class InputUnmarshallerSpec extends AnyWordSpec with Matchers with MockFactory {
+class Link__Import_Spec extends AnyWordSpec with Matchers with MockFactory {
 
-  "A Scalar" when {
-    "The Scalar is not an Object should call the default getScalarValue" in {
-      val default = stub[InputUnmarshaller[Unit]]
-      (default.isMapNode _).when(()).returns(false)
-
-      val upgrade: InputUnmarshaller[Unit] = Federation.upgrade(default)
-      upgrade.getScalarValue(())
-
-      (default.getScalarValue _).verify(())
-    }
-
-    "The Scalar is an Object with a __typeName field should be a NodeObject" in {
-      val default = stub[InputUnmarshaller[Unit]]
-      (default.isMapNode _).when(()).returns(true)
-      (default.getMapValue _).when((), "__typename").returns(Some(()))
-
-      val upgrade: InputUnmarshaller[Unit] = Federation.upgrade(default)
-
-      upgrade.getScalarValue(()) shouldBe a[NodeObject[Unit]]
-    }
-
-    "A Scalar that is an Object without '__typename' but with a 'name' field" when {
-      "the 'name' is a non-string, the default getScalarValue should be called" in {
+  "An Object Scalar" when {
+    "the object contains a `name` field" should {
+      "call the default getScalarValue, if the 'name' is a non-string" in {
         val default = stub[InputUnmarshaller[Unit]]
         (default.isMapNode _).when(()).returns(true)
         (default.getMapValue _).when((), "__typename").returns(None)
@@ -41,7 +22,7 @@ class InputUnmarshallerSpec extends AnyWordSpec with Matchers with MockFactory {
 
         (default.getScalarValue _).verify(())
       }
-      "The 'name' is a String, the Scalar should be a Link__Import__Object" in {
+      "be a Link__Import__Object, if the 'name' is a String" in {
         val default = stub[InputUnmarshaller[Unit]]
         (default.isMapNode _).when(()).returns(true)
         (default.getMapValue _).when((), "__typename").returns(None)
@@ -55,8 +36,8 @@ class InputUnmarshallerSpec extends AnyWordSpec with Matchers with MockFactory {
       }
     }
 
-    "The Scalar is an Object without __typename but with a string 'name' field and an 'as' field" when {
-      "The 'as' is a non-string, the Scalar should be a Link__Inport__Object with only name" in {
+    "the object contains a string 'name' field and an 'as' field" should {
+      "be a Link__Import__Object with only name, if 'as' is a non-string" in {
         val default = stub[InputUnmarshaller[Unit]]
         (default.isMapNode _).when(()).returns(true)
         (default.getMapValue _).when((), "__typename").returns(None)
@@ -69,7 +50,7 @@ class InputUnmarshallerSpec extends AnyWordSpec with Matchers with MockFactory {
 
         upgrade.getScalarValue(()) should be(Link__Import_Object("myname"))
       }
-      "The 'as' is a String, the Scalar should be a Link__Inport__Object with name and as" in {
+      "be a Link__Import__Object with name and as, if 'as' is a String" in {
         val default = stub[InputUnmarshaller[Unit]]
         (default.isMapNode _).when(()).returns(true)
         (default.getMapValue _).when((), "__typename").returns(None)

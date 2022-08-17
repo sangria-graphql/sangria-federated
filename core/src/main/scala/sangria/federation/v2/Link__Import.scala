@@ -11,7 +11,7 @@ case class Link__Import_Object(name: String, as: Option[String] = None)
 
 object Link__Import {
 
-  case object Link__ImportCoercionViolation
+  case object Link__Import_Coercion_Violation
       extends ValueCoercionViolation("link_Import scalar expected!!")
 
   val Type = ScalarType[Abstract_Link__Import](
@@ -22,8 +22,8 @@ object Link__Import {
     coerceUserInput = {
       case obj: Link__Import_Object => Right(obj)
       case str: String => Right(Link__Import(str))
-      case _ => Left(Link__ImportCoercionViolation)
+      case _ => Left(Link__Import_Coercion_Violation)
     },
-    coerceInput = { _ => Left(Link__ImportCoercionViolation) }
+    coerceInput = { _ => Left(Link__Import_Coercion_Violation) }
   )
 }
