@@ -32,7 +32,7 @@ class FederationSpec extends AsyncFreeSpec {
           Nil
         )
 
-        val otherSchema = Schema
+        val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
             schema {
               query: Query
@@ -65,7 +65,9 @@ class FederationSpec extends AsyncFreeSpec {
           """)
           .extend(Document(Vector(_FieldSet.Type.toAst)))
 
-        schema.compare(otherSchema).collect { case _: AbstractChange => true } shouldBe empty
+        schema.compare(expectedSubGraphSchema).collect { case _: AbstractChange =>
+          true
+        } shouldBe empty
       }
 
       "in case entities are defined" in {
@@ -87,7 +89,7 @@ class FederationSpec extends AsyncFreeSpec {
           Nil
         )
 
-        val otherSchema = Schema
+        val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
             schema {
               query: Query
@@ -128,7 +130,9 @@ class FederationSpec extends AsyncFreeSpec {
           """)
           .extend(Document(Vector(_FieldSet.Type.toAst)))
 
-        schema.compare(otherSchema).collect { case _: AbstractChange => true } shouldBe empty
+        schema.compare(expectedSubGraphSchema).collect { case _: AbstractChange =>
+          true
+        } shouldBe empty
       }
     }
 

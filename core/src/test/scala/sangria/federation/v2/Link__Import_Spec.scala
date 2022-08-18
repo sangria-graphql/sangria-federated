@@ -2,13 +2,12 @@ package sangria.federation.v2
 
 import io.circe._
 import io.circe.parser._
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import sangria.validation.Violation
 
-class Link__Import_Spec extends AnyWordSpec with Matchers with MockFactory with EitherValues {
+class Link__Import_Spec extends AnyWordSpec with Matchers with EitherValues {
 
   implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
 
