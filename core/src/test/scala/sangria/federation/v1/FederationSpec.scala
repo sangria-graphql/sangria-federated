@@ -9,9 +9,8 @@ import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers._
 import sangria.ast.Document
 import sangria.execution.{Executor, VariableCoercionError}
+import sangria.federation._
 import sangria.macros.LiteralGraphQLStringContext
-import sangria.schema.Schema
-import sangria.schema.SchemaChange.AbstractChange
 import sangria.parser.QueryParser
 import sangria.schema._
 
@@ -64,9 +63,7 @@ class FederationSpec extends AsyncFreeSpec {
           """)
           .extend(Document(Vector(_FieldSet.Type.toAst)))
 
-        schema.compare(expectedSubGraphSchema).collect { case _: AbstractChange =>
-          true
-        } shouldBe empty
+        schema should beCompatibleWith(expectedSubGraphSchema)
       }
 
       "in case entities are defined" in {
@@ -127,9 +124,7 @@ class FederationSpec extends AsyncFreeSpec {
           """)
           .extend(Document(Vector(_FieldSet.Type.toAst)))
 
-        schema.compare(expectedSubGraphSchema).collect { case _: AbstractChange =>
-          true
-        } shouldBe empty
+        schema should beCompatibleWith(expectedSubGraphSchema)
       }
     }
 
