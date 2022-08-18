@@ -26,7 +26,7 @@ class Link__Import_Spec extends AnyWordSpec with Matchers with EitherValues {
       // https://specs.apollo.dev/link/v1.0/#example-import-an-aliased-name
       parseUserInput(
         parse("""{ "name": "@example", "as": "@eg" }""").getOrElse(
-          Json.Null)).value shouldBe Link__Import_Object(name = "@example", Some("@eg"))
+          Json.Null)).value shouldBe Link__Import_Object(name = "@example", as = Some("@eg"))
     }
     "raise exception if 'name' field is not a string" in {
       an[IllegalStateException] should be thrownBy parseUserInput(
