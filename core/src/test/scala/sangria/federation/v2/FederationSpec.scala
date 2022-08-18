@@ -1,4 +1,4 @@
-package sangria.federation.v1
+package sangria.federation.v2
 
 import scala.util.Success
 
@@ -46,6 +46,8 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _FieldSet
 
             scalar _Any
+
+            scalar link__Import
 
             type _Service {
               sdl: String
@@ -107,6 +109,8 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _FieldSet
 
             scalar _Any
+
+            scalar link__Import
 
             type _Service {
               sdl: String
