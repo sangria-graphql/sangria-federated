@@ -16,7 +16,7 @@ import sangria.schema._
 
 class FederationSpec extends AsyncFreeSpec {
 
-  "federation schema" - {
+  "federation schema v2" - {
     "should respect Apollo specification" - {
       "in case no entity is defined" in {
         val schema = Federation.extend(
