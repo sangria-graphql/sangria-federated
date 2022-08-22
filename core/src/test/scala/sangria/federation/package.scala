@@ -12,7 +12,7 @@ package object federation {
 
       MatchResult(
         changes.collect { case _: AbstractChange => true }.isEmpty,
-        s"Schemas have following changes: ${changes.mkString(", ")}",
+        s"Schemas have following changes:\n  ${changes.mkString("\n  ")}",
         s"Schemas should be different but no changes can be found"
       )
     }
