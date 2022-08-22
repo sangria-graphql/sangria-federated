@@ -160,7 +160,8 @@ class FederationSpec extends AsyncFreeSpec {
 
           Executor
             .execute(schema, query)
-            .map(_.renderPretty should be("""{
+            .map(queryAstResultMarshaller.renderPretty(_) should be("""
+                |{
                 |  data: {
                 |    _service: {
                 |      sdl: "type Query {\n  field: Int\n}"
@@ -190,7 +191,7 @@ class FederationSpec extends AsyncFreeSpec {
 
           Executor
             .execute(schema, query)
-            .map(_.renderPretty should be("""{
+            .map(queryAstResultMarshaller.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
                 |      sdl: "type Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
@@ -217,7 +218,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         Executor
           .execute(schema, query)
-          .map(_.renderPretty should be("""{
+          .map(queryAstResultMarshaller.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
                 |      sdl: "\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
@@ -292,7 +293,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         Executor
           .execute(schema, query, variables = args)
-          .map(_.renderPretty should be("""{
+          .map(queryAstResultMarshaller.renderPretty(_) should be("""{
               |  data: {
               |    _entities: [{
               |      id: 1
