@@ -60,7 +60,7 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-            directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
+            directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
           """)
           .extend(Document(Vector(_FieldSet.Type.toAst)))
 
@@ -121,7 +121,7 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-            directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
+            directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
           """)
           .extend(Document(Vector(_FieldSet.Type.toAst)))
 
