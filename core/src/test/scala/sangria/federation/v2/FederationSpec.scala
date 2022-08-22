@@ -50,6 +50,14 @@ class FederationSpec extends AsyncFreeSpec {
 
             scalar link__Import
 
+            enum link__Purpose {
+              "`SECURITY` features provide metadata necessary to securely resolve fields."
+              SECURITY
+
+              "`EXECUTION` features provide metadata necessary for operation execution."
+              EXECUTION
+            }
+
             type _Service {
               sdl: String
             }
@@ -112,6 +120,14 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _Any
 
             scalar link__Import
+
+            enum link__Purpose {
+              "`SECURITY` features provide metadata necessary to securely resolve fields."
+              SECURITY
+
+              "`EXECUTION` features provide metadata necessary for operation execution."
+              EXECUTION
+            }
 
             type _Service {
               sdl: String
