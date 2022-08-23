@@ -50,6 +50,14 @@ class FederationSpec extends AsyncFreeSpec {
 
             scalar link__Import
 
+            enum link__Purpose {
+              "`SECURITY` features provide metadata necessary to securely resolve fields."
+              SECURITY
+
+              "`EXECUTION` features provide metadata necessary for operation execution."
+              EXECUTION
+            }
+
             type _Service {
               sdl: String
             }
@@ -63,8 +71,11 @@ class FederationSpec extends AsyncFreeSpec {
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
             directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+
+            directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
           """)
-          .extend(Document(Vector(_FieldSet.Type.toAst)))
+          .extend(Document(
+            Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
 
         schema should beCompatibleWith(expectedSubGraphSchema)
       }
@@ -113,6 +124,14 @@ class FederationSpec extends AsyncFreeSpec {
 
             scalar link__Import
 
+            enum link__Purpose {
+              "`SECURITY` features provide metadata necessary to securely resolve fields."
+              SECURITY
+
+              "`EXECUTION` features provide metadata necessary for operation execution."
+              EXECUTION
+            }
+
             type _Service {
               sdl: String
             }
@@ -126,8 +145,11 @@ class FederationSpec extends AsyncFreeSpec {
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
             directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+
+            directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
           """)
-          .extend(Document(Vector(_FieldSet.Type.toAst)))
+          .extend(Document(
+            Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
 
         schema should beCompatibleWith(expectedSubGraphSchema)
       }

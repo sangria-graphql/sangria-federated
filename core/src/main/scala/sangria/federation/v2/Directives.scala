@@ -1,7 +1,7 @@
 package sangria.federation.v2
 
 import sangria.ast
-import sangria.schema.{Argument, Directive, DirectiveLocation}
+import sangria.schema._
 
 object Directives {
 
@@ -32,7 +32,18 @@ object Directives {
         name = "fields",
         argumentType = _FieldSet.Type
       ) :: Nil,
-      locations = Set(DirectiveLocation.FieldDefinition))
+      locations = Set(DirectiveLocation.FieldDefinition)),
+    Directive(
+      name = "link",
+      arguments = List(
+        Argument("url", OptionInputType(StringType)),
+        Argument("as", OptionInputType(StringType)),
+        Argument("for", OptionInputType(Link__Purpose.Type)),
+        Argument("import", OptionInputType(ListInputType(OptionInputType(Link__Import.Type))))
+      ),
+      locations = Set(DirectiveLocation.Schema),
+      repeatable = true
+    )
   )
 
   object Key {

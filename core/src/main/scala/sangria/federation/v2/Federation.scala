@@ -32,7 +32,12 @@ object Federation {
           Document(definitions = Vector(queryType(_service))),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map("Query" -> Map("_service" -> (_ => _Service(sdl)))),
-            AdditionalTypes(_Any.__type[Node], Link__Import.Type, _Service.Type, _FieldSet.Type)
+            AdditionalTypes(
+              _Any.__type[Node],
+              Link__Import.Type,
+              _Service.Type,
+              _FieldSet.Type,
+              Link__Purpose.Type)
           )
         )
       case entities =>
@@ -60,7 +65,8 @@ object Federation {
               Link__Import.Type,
               _Service.Type,
               _Entity(entities),
-              _FieldSet.Type)
+              _FieldSet.Type,
+              Link__Purpose.Type)
           )
         )
     }).copy(directives = Directives.definitions ::: schema.directives)
