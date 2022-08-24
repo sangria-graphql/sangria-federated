@@ -70,7 +70,7 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-            directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+            directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
 
             directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
           """)
@@ -144,7 +144,7 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-            directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+            directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
 
             directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
           """)

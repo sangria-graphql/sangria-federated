@@ -8,10 +8,16 @@ object Directives {
   val definitions = List(
     Directive(
       name = "key",
-      arguments = Argument(
-        name = "fields",
-        argumentType = _FieldSet.Type
-      ) :: Nil,
+      arguments = List(
+        Argument(
+          name = "fields",
+          argumentType = _FieldSet.Type
+        ),
+        Argument(
+          name = "resolvable",
+          argumentType = OptionInputType(BooleanType),
+          defaultValue = true
+        )),
       locations = Set(DirectiveLocation.Object, DirectiveLocation.Interface),
       repeatable = true
     ),
