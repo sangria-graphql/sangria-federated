@@ -53,6 +53,21 @@ object Directives {
     Directive(
       name = "shareable",
       locations = Set(DirectiveLocation.Object, DirectiveLocation.FieldDefinition)
+    ),
+    Directive(
+      name = "inaccessible",
+      locations = Set(
+        DirectiveLocation.FieldDefinition,
+        DirectiveLocation.Object,
+        DirectiveLocation.Interface,
+        DirectiveLocation.Union,
+        DirectiveLocation.ArgumentDefinition,
+        DirectiveLocation.Scalar,
+        DirectiveLocation.Enum,
+        DirectiveLocation.EnumValue,
+        DirectiveLocation.InputObject,
+        DirectiveLocation.InputFieldDefinition
+      )
     )
   )
 
