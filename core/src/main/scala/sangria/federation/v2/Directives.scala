@@ -49,6 +49,10 @@ object Directives {
       ),
       locations = Set(DirectiveLocation.Schema),
       repeatable = true
+    ),
+    Directive(
+      name = "shareable",
+      locations = Set(DirectiveLocation.Object, DirectiveLocation.FieldDefinition)
     )
   )
 
