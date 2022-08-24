@@ -68,6 +68,13 @@ object Directives {
         DirectiveLocation.InputObject,
         DirectiveLocation.InputFieldDefinition
       )
+    ),
+    Directive(
+      name = "override",
+      arguments = List(
+        Argument("from", StringType)
+      ),
+      locations = Set(DirectiveLocation.FieldDefinition)
     )
   )
 
