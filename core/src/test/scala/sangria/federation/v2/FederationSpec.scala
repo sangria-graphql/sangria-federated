@@ -70,9 +70,15 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-            directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+            directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
 
             directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+            directive @shareable on OBJECT | FIELD_DEFINITION
+
+            directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+            directive @override(from: String!) on FIELD_DEFINITION
           """)
           .extend(Document(
             Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
@@ -144,9 +150,15 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-            directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+            directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
 
             directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+            directive @shareable on OBJECT | FIELD_DEFINITION
+
+            directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+            directive @override(from: String!) on FIELD_DEFINITION
           """)
           .extend(Document(
             Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))

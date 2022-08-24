@@ -8,10 +8,16 @@ object Directives {
   val definitions = List(
     Directive(
       name = "key",
-      arguments = Argument(
-        name = "fields",
-        argumentType = _FieldSet.Type
-      ) :: Nil,
+      arguments = List(
+        Argument(
+          name = "fields",
+          argumentType = _FieldSet.Type
+        ),
+        Argument(
+          name = "resolvable",
+          argumentType = OptionInputType(BooleanType),
+          defaultValue = true
+        )),
       locations = Set(DirectiveLocation.Object, DirectiveLocation.Interface),
       repeatable = true
     ),
@@ -43,6 +49,32 @@ object Directives {
       ),
       locations = Set(DirectiveLocation.Schema),
       repeatable = true
+    ),
+    Directive(
+      name = "shareable",
+      locations = Set(DirectiveLocation.Object, DirectiveLocation.FieldDefinition)
+    ),
+    Directive(
+      name = "inaccessible",
+      locations = Set(
+        DirectiveLocation.FieldDefinition,
+        DirectiveLocation.Object,
+        DirectiveLocation.Interface,
+        DirectiveLocation.Union,
+        DirectiveLocation.ArgumentDefinition,
+        DirectiveLocation.Scalar,
+        DirectiveLocation.Enum,
+        DirectiveLocation.EnumValue,
+        DirectiveLocation.InputObject,
+        DirectiveLocation.InputFieldDefinition
+      )
+    ),
+    Directive(
+      name = "override",
+      arguments = List(
+        Argument("from", StringType)
+      ),
+      locations = Set(DirectiveLocation.FieldDefinition)
     )
   )
 
