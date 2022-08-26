@@ -35,7 +35,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires"]) {
               query: Query
             }
 
@@ -107,7 +107,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires"]) {
               query: Query
             }
 

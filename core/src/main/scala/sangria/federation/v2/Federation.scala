@@ -1,6 +1,13 @@
 package sangria.federation.v2
 
-import sangria.ast.Document
+import sangria.ast.{
+  Argument => AstArgument,
+  Directive => AstDirective,
+  Document,
+  ListValue,
+  SchemaExtensionDefinition,
+  StringValue
+}
 import sangria.marshalling.InputUnmarshaller
 import sangria.renderer.SchemaFilter
 import sangria.schema._
@@ -26,10 +33,33 @@ object Federation {
 
     val sdl = Some(schema.renderPretty(SchemaFilter.withoutGraphQLBuiltIn))
 
+    val schemaExtensionDefinition = SchemaExtensionDefinition(
+      operationTypes = Vector.empty,
+      directives = Vector(
+        AstDirective(
+          name = "link",
+          arguments = Vector(
+            AstArgument("url", StringValue("https://specs.apollo.dev/federation/v2.0")),
+            AstArgument(
+              "import",
+              ListValue(Vector(
+                StringValue("@key"),
+                StringValue("@shareable"),
+                StringValue("@inaccessible"),
+                StringValue("@override"),
+                StringValue("@external"),
+                StringValue("@provides"),
+                StringValue("@requires")
+              ))
+            )
+          )
+        ))
+    )
+
     (entities match {
       case Nil =>
         schema.extend(
-          Document(definitions = Vector(queryType(_service))),
+          Document(Vector(queryType(_service), schemaExtensionDefinition)),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map("Query" -> Map("_service" -> (_ => _Service(sdl)))),
             AdditionalTypes(
@@ -42,7 +72,7 @@ object Federation {
         )
       case entities =>
         schema.extend(
-          Document(definitions = Vector(queryType(_service, _entities))),
+          Document(Vector(queryType(_service, _entities), schemaExtensionDefinition)),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map(
               "Query" -> Map(
