@@ -2,7 +2,8 @@ import sbt._
 
 object Dependencies {
   object V {
-    val circe = "0.14.1"
+    val circe = "0.14.2"
+    val circeOptics = "0.14.1"
     val http4s = "1.0.0-M29"
   }
 
@@ -17,7 +18,7 @@ object Dependencies {
 
   val circeGeneric = "io.circe" %% "circe-generic" % V.circe
   val circeParser = "io.circe" %% "circe-parser" % V.circe
-  val circeOptics = "io.circe" %% "circe-optics" % V.circe
+  val circeOptics = "io.circe" %% "circe-optics" % V.circeOptics
 
   val scalaTest = "org.scalatest" %% "scalatest" % "3.2.13"
 }
