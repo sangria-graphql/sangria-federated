@@ -4,7 +4,7 @@ object Dependencies {
   object V {
     val circe = "0.14.2"
     val circeOptics = "0.14.1"
-    val http4s = "1.0.0-M29"
+    val http4s = "1.0.0-M30"
   }
 
   val sangria = "org.sangria-graphql" %% "sangria" % "3.2.0"
