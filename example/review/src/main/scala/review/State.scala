@@ -6,7 +6,7 @@ case class State(id: Int)
 
 object StateGraphQLSchema {
 
-  import sangria.federation.Directives._
+  import sangria.federation.v1.Directives._
 
   val schema =
     ObjectType(

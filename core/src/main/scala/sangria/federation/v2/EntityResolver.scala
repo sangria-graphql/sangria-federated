@@ -1,4 +1,4 @@
-package sangria.federation
+package sangria.federation.v2
 
 import sangria.schema._
 

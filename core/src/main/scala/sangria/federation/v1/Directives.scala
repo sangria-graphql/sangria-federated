@@ -1,7 +1,7 @@
-package sangria.federation
+package sangria.federation.v1
 
 import sangria.ast
-import sangria.schema._
+import sangria.schema.{Argument, Directive, DirectiveLocation}
 
 object Directives {
 
@@ -12,7 +12,9 @@ object Directives {
         name = "fields",
         argumentType = _FieldSet.Type
       ) :: Nil,
-      locations = Set(DirectiveLocation.Object, DirectiveLocation.Interface)),
+      locations = Set(DirectiveLocation.Object, DirectiveLocation.Interface),
+      repeatable = true
+    ),
     Directive(name = "external", locations = Set(DirectiveLocation.FieldDefinition)),
     Directive(
       name = "extends",

@@ -1,4 +1,4 @@
-package sangria.federation
+package sangria.federation.v2
 
 import scala.util.Success
 
@@ -9,15 +9,15 @@ import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers._
 import sangria.ast.Document
 import sangria.execution.{Executor, VariableCoercionError}
+import sangria.federation._
 import sangria.macros.LiteralGraphQLStringContext
-import sangria.schema.Schema
-import sangria.schema.SchemaChange.AbstractChange
 import sangria.parser.QueryParser
+import sangria.renderer.QueryRenderer
 import sangria.schema._
 
 class FederationSpec extends AsyncFreeSpec {
 
-  "federation schema" - {
+  "federation schema v2" - {
     "should respect Apollo specification" - {
       "in case no entity is defined" in {
         val schema = Federation.extend(
@@ -33,9 +33,9 @@ class FederationSpec extends AsyncFreeSpec {
           Nil
         )
 
-        val otherSchema = Schema
+        val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires"]) {
               query: Query
             }
 
@@ -47,6 +47,16 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _FieldSet
 
             scalar _Any
+
+            scalar link__Import
+
+            enum link__Purpose {
+              "`SECURITY` features provide metadata necessary to securely resolve fields."
+              SECURITY
+
+              "`EXECUTION` features provide metadata necessary for operation execution."
+              EXECUTION
+            }
 
             type _Service {
               sdl: String
@@ -60,11 +70,20 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-            directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
-          """)
-          .extend(Document(Vector(_FieldSet.Type.toAst)))
+            directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
 
-        schema.compare(otherSchema).collect { case _: AbstractChange => true } shouldBe empty
+            directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+            directive @shareable on OBJECT | FIELD_DEFINITION
+
+            directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+            directive @override(from: String!) on FIELD_DEFINITION
+          """)
+          .extend(Document(
+            Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
+
+        schema should beCompatibleWith(expectedSubGraphSchema)
       }
 
       "in case entities are defined" in {
@@ -86,9 +105,9 @@ class FederationSpec extends AsyncFreeSpec {
           Nil
         )
 
-        val otherSchema = Schema
+        val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires"]) {
               query: Query
             }
 
@@ -109,6 +128,16 @@ class FederationSpec extends AsyncFreeSpec {
 
             scalar _Any
 
+            scalar link__Import
+
+            enum link__Purpose {
+              "`SECURITY` features provide metadata necessary to securely resolve fields."
+              SECURITY
+
+              "`EXECUTION` features provide metadata necessary for operation execution."
+              EXECUTION
+            }
+
             type _Service {
               sdl: String
             }
@@ -121,11 +150,20 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 
-            directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
-          """)
-          .extend(Document(Vector(_FieldSet.Type.toAst)))
+            directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
 
-        schema.compare(otherSchema).collect { case _: AbstractChange => true } shouldBe empty
+            directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+            directive @shareable on OBJECT | FIELD_DEFINITION
+
+            directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+            directive @override(from: String!) on FIELD_DEFINITION
+          """)
+          .extend(Document(
+            Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
+
+        schema should beCompatibleWith(expectedSubGraphSchema)
       }
     }
 
@@ -157,7 +195,7 @@ class FederationSpec extends AsyncFreeSpec {
 
           Executor
             .execute(schema, query)
-            .map(_.renderPretty should be("""{
+            .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
                 |      sdl: "type Query {\n  field: Int\n}"
@@ -187,7 +225,7 @@ class FederationSpec extends AsyncFreeSpec {
 
           Executor
             .execute(schema, query)
-            .map(_.renderPretty should be("""{
+            .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
                 |      sdl: "type Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
@@ -214,7 +252,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         Executor
           .execute(schema, query)
-          .map(_.renderPretty should be("""{
+          .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
                 |      sdl: "\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
@@ -254,7 +292,7 @@ class FederationSpec extends AsyncFreeSpec {
           AstSchemaBuilder.resolverBased[Any](
             FieldResolver.map(
               "Query" -> Map(
-                "states" -> (ctx => Nil)
+                "states" -> (_ => Nil)
               )
             ),
             FieldResolver.map(
@@ -289,7 +327,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         Executor
           .execute(schema, query, variables = args)
-          .map(_.renderPretty should be("""{
+          .map(QueryRenderer.renderPretty(_) should be("""{
               |  data: {
               |    _entities: [{
               |      id: 1

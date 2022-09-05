@@ -29,7 +29,7 @@ To be able to communicate with [Apollo's federation gateway](https://www.apollog
 As an example, let's consider an application using circe with a state and review service. 
 - The state service defines the state entity, annotated with ```@key("id")```. And for each entity, we need to define an entity resolver ([reference resolver](https://www.apollographql.com/docs/federation/entities/#resolving)), see code below:
     ```scala
-    import sangria.federation.Decoder
+    import sangria.federation.v1.Decoder
     import io.circe.Json,  io.circe.generic.semiauto._
     import sangria.schema._
     
@@ -181,7 +181,7 @@ As an example, let's consider an application using circe with a state and review
 
   object State {
     
-    import sangria.federation.Directives._
+    import sangria.federation.v1.Directives._
   
     val stateSchema =
       ObjectType(
