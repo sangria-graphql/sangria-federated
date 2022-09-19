@@ -6,7 +6,7 @@ import cats.effect._
 import cats.implicits._
 import io.circe._
 import io.circe.optics.JsonPath._
-import sangria.ast.Document
+import sangria.ast
 import sangria.execution._
 import sangria.marshalling.InputUnmarshaller
 import sangria.marshalling.circe.CirceResultMarshaller
@@ -75,7 +75,7 @@ object GraphQL {
       def exec(
           schema: Schema[A, Any],
           userContext: F[A],
-          query: Document,
+          query: ast.Document,
           operationName: Option[String],
           variables: Json): F[Either[Json, Json]] =
         for {

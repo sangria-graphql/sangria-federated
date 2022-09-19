@@ -4,12 +4,12 @@ import sangria.ast._
 
 object Query {
 
-  val _service = FieldDefinition(
+  val _service: FieldDefinition = FieldDefinition(
     name = "_service",
     fieldType = NotNullType(NamedType("_Service")),
     arguments = Vector.empty)
 
-  val _entities =
+  val _entities: FieldDefinition =
     FieldDefinition(
       name = "_entities",
       fieldType = NotNullType(ListType(NamedType("_Entity"))),
@@ -20,7 +20,7 @@ object Query {
           defaultValue = None))
     )
 
-  def queryType(fields: FieldDefinition*) =
+  def queryType(fields: FieldDefinition*): ObjectTypeExtensionDefinition =
     ObjectTypeExtensionDefinition(
       name = "Query",
       interfaces = Vector.empty,

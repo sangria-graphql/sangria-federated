@@ -37,7 +37,7 @@ object Server {
         PermanentRedirect(Location(uri"/playground"))
     }
 
-    BlazeServerBuilder[F](global)
+    BlazeServerBuilder[F]
       .bindHttp(port, "localhost")
       .withHttpApp(routes.orNotFound)
       .resource

@@ -1,13 +1,6 @@
 package sangria.federation.v2
 
-import sangria.ast.{
-  Argument => AstArgument,
-  Directive => AstDirective,
-  Document,
-  ListValue,
-  SchemaExtensionDefinition,
-  StringValue
-}
+import sangria.ast
 import sangria.marshalling.InputUnmarshaller
 import sangria.renderer.SchemaFilter
 import sangria.schema._
@@ -33,23 +26,23 @@ object Federation {
 
     val sdl = Some(schema.renderPretty(SchemaFilter.withoutGraphQLBuiltIn))
 
-    val schemaExtensionDefinition = SchemaExtensionDefinition(
+    val schemaExtensionDefinition = ast.SchemaExtensionDefinition(
       operationTypes = Vector.empty,
       directives = Vector(
-        AstDirective(
+        ast.Directive(
           name = "link",
           arguments = Vector(
-            AstArgument("url", StringValue("https://specs.apollo.dev/federation/v2.0")),
-            AstArgument(
+            ast.Argument("url", ast.StringValue("https://specs.apollo.dev/federation/v2.0")),
+            ast.Argument(
               "import",
-              ListValue(Vector(
-                StringValue("@key"),
-                StringValue("@shareable"),
-                StringValue("@inaccessible"),
-                StringValue("@override"),
-                StringValue("@external"),
-                StringValue("@provides"),
-                StringValue("@requires")
+              ast.ListValue(Vector(
+                ast.StringValue("@key"),
+                ast.StringValue("@shareable"),
+                ast.StringValue("@inaccessible"),
+                ast.StringValue("@override"),
+                ast.StringValue("@external"),
+                ast.StringValue("@provides"),
+                ast.StringValue("@requires")
               ))
             )
           )
@@ -59,7 +52,7 @@ object Federation {
     (entities match {
       case Nil =>
         schema.extend(
-          Document(Vector(queryType(_service), schemaExtensionDefinition)),
+          ast.Document(Vector(queryType(_service), schemaExtensionDefinition)),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map("Query" -> Map("_service" -> (_ => _Service(sdl)))),
             AdditionalTypes(
@@ -72,7 +65,7 @@ object Federation {
         )
       case entities =>
         schema.extend(
-          Document(Vector(queryType(_service, _entities), schemaExtensionDefinition)),
+          ast.Document(Vector(queryType(_service, _entities), schemaExtensionDefinition)),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map(
               "Query" -> Map(

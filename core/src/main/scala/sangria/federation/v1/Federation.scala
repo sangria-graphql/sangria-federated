@@ -1,6 +1,6 @@
 package sangria.federation.v1
 
-import sangria.ast.Document
+import sangria.ast
 import sangria.marshalling.InputUnmarshaller
 import sangria.renderer.SchemaFilter
 import sangria.schema._
@@ -29,7 +29,7 @@ object Federation {
     (entities match {
       case Nil =>
         schema.extend(
-          Document(definitions = Vector(queryType(_service))),
+          ast.Document(definitions = Vector(queryType(_service))),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map("Query" -> Map("_service" -> (_ => _Service(sdl)))),
             AdditionalTypes(_Any.__type[Node], _Service.Type, _FieldSet.Type)
@@ -37,7 +37,7 @@ object Federation {
         )
       case entities =>
         schema.extend(
-          Document(definitions = Vector(queryType(_service, _entities))),
+          ast.Document(definitions = Vector(queryType(_service, _entities))),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map(
               "Query" -> Map(
