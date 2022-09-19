@@ -14,11 +14,11 @@ private[federation] object _Any {
 
   def __type[Node] = ScalarType[_Any[Node]](
     name = "_Any",
-    coerceOutput = { case _ =>
+    coerceOutput = { (_, _) =>
       "output"
     },
     coerceUserInput = {
-      case n: NodeObject[Node] =>
+      case n: NodeObject[Node] @unchecked =>
         n.__typename match {
           case Some(__typename) => Right(_Any(__typename, n))
           case None => Left(TypeNameNotFound)
