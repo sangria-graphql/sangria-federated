@@ -20,7 +20,6 @@ object Server {
 
     object dsl extends Http4sDsl[F]
     import dsl._
-    import scala.concurrent.ExecutionContext.global
 
     val routes: HttpRoutes[F] = HttpRoutes.of[F] {
       case req @ POST -> Root / "api" / "graphql" =>

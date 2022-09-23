@@ -6,7 +6,7 @@ import org.scalatest.matchers.{MatchResult, Matcher}
 
 package object federation {
 
-  def beCompatibleWith(expectedSchema: Schema[_, _]) =
+  def beCompatibleWith(expectedSchema: Schema[_, _]): Matcher[Schema[_, _]] =
     Matcher { schema: Schema[_, _] =>
       val changes = schema.compare(expectedSchema)
 

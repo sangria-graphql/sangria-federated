@@ -5,7 +5,7 @@ import sangria.schema.{Argument, Directive, DirectiveLocation}
 
 object Directives {
 
-  val definitions = List(
+  val definitions: List[Directive] = List(
     Directive(
       name = "key",
       arguments = Argument(
@@ -37,13 +37,13 @@ object Directives {
 
   object Key {
 
-    def apply(fields: String) =
+    def apply(fields: String): ast.Directive =
       ast.Directive(
         name = "key",
         arguments = Vector(ast.Argument(name = "fields", value = ast.StringValue(fields))))
   }
 
-  val External = ast.Directive(name = "external", arguments = Vector.empty)
+  val External: ast.Directive = ast.Directive(name = "external", arguments = Vector.empty)
 
-  val Extends = ast.Directive(name = "extends", arguments = Vector.empty)
+  val Extends: ast.Directive = ast.Directive(name = "extends", arguments = Vector.empty)
 }

@@ -7,12 +7,12 @@ private[federation] object _Any {
   import sangria.schema.ScalarType
   import sangria.validation.ValueCoercionViolation
 
-  case object AnyCoercionViolation extends ValueCoercionViolation("_Any value expected!!")
+  private case object AnyCoercionViolation extends ValueCoercionViolation("_Any value expected!!")
 
-  case object TypeNameNotFound
+  private case object TypeNameNotFound
       extends ValueCoercionViolation("__typename field is not defined in _Any value!!")
 
-  def __type[Node] = ScalarType[_Any[Node]](
+  def __type[Node]: ScalarType[_Any[Node]] = ScalarType[_Any[Node]](
     name = "_Any",
     coerceOutput = { (_, _) =>
       "output"

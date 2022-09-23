@@ -11,9 +11,9 @@ object Main extends IOApp.Simple {
 
   import StateGraphQLSchema._
 
-  val env = StateService.inMemory
+  private val env = StateService.inMemory
 
-  def graphQL[F[_]: Async]: GraphQL[F] = {
+  private def graphQL[F[_]: Async]: GraphQL[F] = {
     val (schema, um) = Federation.federate[StateService, Any, Json](
       Schema(StateAPI.Query),
       sangria.marshalling.circe.CirceInputUnmarshaller,
