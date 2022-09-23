@@ -16,7 +16,7 @@ object Federation {
 
   def extend[Ctx, Val, Node](
       schema: Schema[Ctx, Val],
-      resolvers: Seq[EntityResolver[Ctx, Node]]) = {
+      resolvers: Seq[EntityResolver[Ctx, Node]]): Schema[Ctx, Val] = {
     val resolversMap = resolvers.map(r => r.typename -> r).toMap
     val representationsArg = Argument("representations", ListInputType(_Any.__type[Node]))
 

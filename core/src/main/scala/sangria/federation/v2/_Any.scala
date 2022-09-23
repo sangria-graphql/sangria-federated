@@ -12,7 +12,7 @@ private[federation] object _Any {
   case object TypeNameNotFound
       extends ValueCoercionViolation("__typename field is not defined in _Any value!!")
 
-  def __type[Node] = ScalarType[_Any[Node]](
+  def __type[Node]: ScalarType[_Any[Node]] = ScalarType[_Any[Node]](
     name = "_Any",
     coerceOutput = { (_, _) =>
       "output"

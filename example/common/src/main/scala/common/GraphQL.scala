@@ -1,7 +1,5 @@
 package common
 
-import scala.util.{Failure, Success}
-
 import cats.effect._
 import cats.implicits._
 import io.circe._
@@ -12,7 +10,9 @@ import sangria.marshalling.InputUnmarshaller
 import sangria.marshalling.circe.CirceResultMarshaller
 import sangria.parser.{QueryParser, SyntaxError}
 import sangria.schema.Schema
-import sangria.validation.AstNodeViolation
+
+import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 trait GraphQL[F[_]] {
 
@@ -31,45 +31,13 @@ object GraphQL {
   private val operationNameLens = root.operationName.string
   private val variablesLens = root.variables.obj
 
-  private def formatString(s: String): Json = Json.obj(
-    "errors" -> Json.arr(
-      Json.obj("message" -> Json.fromString(s))
-    ))
-
-  private def formatSyntaxError(e: SyntaxError): Json = Json.obj(
-    "errors" -> Json.arr(Json.obj(
-      "message" -> Json.fromString(e.getMessage),
-      "locations" -> Json.arr(Json.obj(
-        "line" -> Json.fromInt(e.originalError.position.line),
-        "column" -> Json.fromInt(e.originalError.position.column)))
-    )))
-
-  private def formatThrowable(e: Throwable): Json = Json.obj(
-    "errors" -> Json.arr(
-      Json.obj(
-        "class" -> Json.fromString(e.getClass.getName),
-        "message" -> Json.fromString(e.getMessage))))
-
-  private def formatWithViolations(e: WithViolations): Json =
-    Json.obj("errors" -> Json.fromValues(e.violations.map {
-      case v: AstNodeViolation =>
-        Json.obj(
-          "message" -> Json.fromString(v.errorMessage),
-          "locations" -> Json.fromValues(v.locations.map(loc =>
-            Json.obj("line" -> Json.fromInt(loc.line), "column" -> Json.fromInt(loc.column))))
-        )
-      case v => Json.obj("message" -> Json.fromString(v.errorMessage))
-    }))
-
   def apply[F[_], A](
       schema: Schema[A, Any],
       userContext: F[A]
   )(implicit F: Async[F], um: InputUnmarshaller[Json]): GraphQL[F] =
     new GraphQL[F] {
 
-      import scala.concurrent.ExecutionContext.Implicits.global
-
-      def fail(j: Json): F[Either[Json, Json]] =
+      private def fail(j: Json): F[Either[Json, Json]] =
         F.pure(j.asLeft)
 
       def exec(
@@ -80,25 +48,22 @@ object GraphQL {
           variables: Json): F[Either[Json, Json]] =
         for {
           ctx <- userContext
-          execution <- F.attempt(
-            F.fromFuture(
-              F.delay(
-                Executor
-                  .execute(
-                    schema = schema,
-                    queryAst = query,
-                    userContext = ctx,
-                    variables = variables,
-                    operationName = operationName,
-                    exceptionHandler = ExceptionHandler { case (_, e) =>
-                      HandledException(e.getMessage)
-                    }
-                  )
-              )))
+          executionContext <- Async[F].executionContext
+          execution <- F.attempt(F.fromFuture(F.delay {
+            implicit val ec: ExecutionContext = executionContext
+            Executor
+              .execute(
+                schema = schema,
+                queryAst = query,
+                userContext = ctx,
+                variables = variables,
+                operationName = operationName
+              )
+          }))
           result <- execution match {
             case Right(json) => F.pure(json.asRight)
-            case Left(err: WithViolations) => fail(formatWithViolations(err))
-            case Left(err) => fail(formatThrowable(err))
+            case Left(err: WithViolations) => fail(GraphQLError(err))
+            case Left(err) => F.raiseError(err)
           }
         } yield result
 
@@ -110,7 +75,7 @@ object GraphQL {
 
         queryString match {
           case Some(qs) => query(qs, operationName, variables)
-          case None => fail(formatString("No 'query' property was present in the request."))
+          case None => fail(GraphQLError("No 'query' property was present in the request."))
         }
       }
 
@@ -120,8 +85,8 @@ object GraphQL {
           variables: Json): F[Either[Json, Json]] =
         QueryParser.parse(query) match {
           case Success(ast) => exec(schema, userContext, ast, operationName, variables)
-          case Failure(e @ SyntaxError(_, _, pe)) => fail(formatSyntaxError(e))
-          case Failure(e) => fail(formatThrowable(e))
+          case Failure(e: SyntaxError) => fail(GraphQLError(e))
+          case Failure(e) => F.raiseError(e)
         }
     }
 }

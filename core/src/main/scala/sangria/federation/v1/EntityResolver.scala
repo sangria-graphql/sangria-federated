@@ -17,13 +17,15 @@ object EntityResolver {
   def apply[Ctx, Node, Val, A](
       __typeName: String,
       resolver: A => LeafAction[Ctx, Option[Val]]
-  )(implicit ev: Decoder[Node, A]) = new EntityResolver[Ctx, Node] {
+  )(implicit ev: Decoder[Node, A]): EntityResolver[Ctx, Node] {
+    type Arg = A
+  } = new EntityResolver[Ctx, Node] {
 
     type Arg = A
 
-    val decoder = ev
+    val decoder: Decoder[Node, A] = ev
 
-    def typename = __typeName
+    def typename: String = __typeName
     def resolve(arg: Arg): LeafAction[Ctx, Option[Val]] = resolver(arg)
   }
 }

@@ -6,7 +6,7 @@ object Link__Purpose extends Enumeration {
 
   val SECURITY, EXECUTION = Value
 
-  val Type = EnumType(
+  val Type: EnumType[Link__Purpose.Value] = EnumType(
     name = "link__Purpose",
     values = List(
       EnumValue(

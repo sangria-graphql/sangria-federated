@@ -12,7 +12,7 @@
     "@apollo/federation": "latest",
     "@apollo/gateway": "latest",
     "apollo-server": "latest",
-    "graphql": "^14.0.0",
+    "graphql": "^16.0.0",
     "graphql-cost-analysis": "^1.0.3"
   }
 }
