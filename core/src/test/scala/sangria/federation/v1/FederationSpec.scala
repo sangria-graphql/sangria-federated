@@ -233,7 +233,7 @@ class FederationSpec extends AsyncFreeSpec {
 
       val stateResolver = EntityResolver[Any, Json, State, StateArg](
         __typeName = "State",
-        arg => Some(State(arg.id, "mock")))
+        (arg, _) => Some(State(arg.id, "mock")))
 
       val schema = Federation.extend(
         Schema.buildFromAst(

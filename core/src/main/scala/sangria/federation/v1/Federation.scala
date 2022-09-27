@@ -48,7 +48,7 @@ object Federation {
                       val resolver = resolversMap(any.__typename)
 
                       any.fields.decode[resolver.Arg](resolver.decoder) match {
-                        case Right(value) => resolver.resolve(value)
+                        case Right(value) => resolver.resolve(value, ctx)
                         case Left(_) => LeafAction(None)
                       }
                     })

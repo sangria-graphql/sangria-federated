@@ -13,9 +13,9 @@ object StateGraphQLSchema {
 
   implicit val decoder: Decoder[Json, StateArg] = deriveDecoder[StateArg].decodeJson(_)
 
-  def stateResolver(env: StateService) = EntityResolver[StateService, Json, State, StateArg](
+  val stateResolver = EntityResolver[StateService, Json, State, StateArg](
     __typeName = "State",
-    arg => env.getState(arg.id))
+    (arg, ctx) => ctx.ctx.getState(arg.id))
 
   val schema =
     ObjectType(
