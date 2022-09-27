@@ -17,7 +17,7 @@ object Main extends IOApp.Simple {
     val (schema, um) = Federation.federate[StateService, Any, Json](
       Schema(StateAPI.Query),
       sangria.marshalling.circe.CirceInputUnmarshaller,
-      stateResolver(env))
+      stateResolver)
 
     GraphQL(schema, env.pure[F])(Async[F], um)
   }
