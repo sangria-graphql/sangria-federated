@@ -58,7 +58,13 @@ lazy val core = libraryProject("core")
   .settings(
     name := "sangria-federated",
     description := "Sangria federated",
-    libraryDependencies += Dependencies.sangria,
+    libraryDependencies ++= Seq(
+      Dependencies.sangria,
+      Dependencies.scalapbRuntime
+    ),
+    Compile / PB.targets := Seq(
+      scalapb.gen(grpc = false) -> (Compile / sourceManaged).value / "scalapb"
+    ),
     libraryDependencies ++= Seq(
       Dependencies.scalaTest,
       Dependencies.circeGeneric,
@@ -68,11 +74,11 @@ lazy val core = libraryProject("core")
   )
 
 lazy val exampleReview = exampleProject("example-review")
-  .dependsOn(core, exampleCommon)
+  .dependsOn(exampleCommon)
   .settings(libraryDependencies ++= serviceDependencies)
 
 lazy val exampleState = exampleProject("example-state")
-  .dependsOn(core, exampleCommon)
+  .dependsOn(exampleCommon)
   .settings(libraryDependencies ++= serviceDependencies)
 
 lazy val serviceDependencies = Seq(
@@ -81,6 +87,7 @@ lazy val serviceDependencies = Seq(
 )
 
 lazy val exampleCommon = exampleProject("example-common")
+  .dependsOn(core)
   .settings(
     libraryDependencies ++= Seq(
       Dependencies.catsEffect,
