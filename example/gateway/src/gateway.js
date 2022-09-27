@@ -1,5 +1,7 @@
 const {ApolloGateway} = require('@apollo/gateway');
+const {ApolloServerPluginInlineTrace} = require("apollo-server-core");
 const {Server} = require('./server');
+
 
 const gateway = new ApolloGateway({
   serviceList: [
@@ -15,7 +17,8 @@ const port = 9080;
 
   const server = new Server({
     gateway,
-    subscriptions: false
+    subscriptions: false,
+    plugins: [ApolloServerPluginInlineTrace()],
   });
 
   server.listen({ port: 9080 }).then(({url}) => {

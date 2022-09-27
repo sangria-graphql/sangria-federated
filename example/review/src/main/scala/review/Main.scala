@@ -11,7 +11,7 @@ object Main extends IOApp.Simple {
 
   private val env = ReviewService.inMemory
 
-  private def graphQL[F[_]: Async]: GraphQL[F] = {
+  private def graphQL[F[_]: Async]: GraphQL[F, ReviewService] = {
     val (schema, um) = Federation.federate[ReviewService, Any, Json](
       Schema(ReviewAPI.Query),
       sangria.marshalling.circe.CirceInputUnmarshaller)
@@ -19,5 +19,5 @@ object Main extends IOApp.Simple {
     GraphQL(schema, env.pure[F])(Async[F], um)
   }
 
-  override def run: IO[Unit] = Server.resource[IO](graphQL, 9082).use(_ => IO.never)
+  override def run: IO[Unit] = Server.resource[IO, ReviewService](graphQL, 9082).use(_ => IO.never)
 }
