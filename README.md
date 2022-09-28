@@ -22,7 +22,7 @@ The library adds [Apollo's Federation Specification](https://www.apollographql.c
 
 To make it possible to use `_Any` as a scalar, the library upgrades the used marshaller.
 
-## implementation of the Apollo Federation Subgraph Compatibility
+## Implementation of the Apollo Federation Subgraph Compatibility
 
 A good example showing all different features is the [sangria implementation of the Apollo Federation Subgraph Compatibility](https://github.com/apollographql/apollo-federation-subgraph-compatibility/tree/main/implementations/sangria).
 
@@ -33,9 +33,9 @@ All the code of this example is available [here](./example).
 To be able to communicate with [Apollo's federation gateway](https://www.apollographql.com/docs/federation/gateway/), the graphql sangria service should be using both the federated schema and unmarshaller.
 
 As an example, let's consider the following services:
-- a review service provides a subgraph for review
-- a state service provides a subgraph for states. This state is used by reviews.
-- both subgraphs are composed into one supergraph that is the only graph to use by users. This supergraph is one GraphQ schema that exposes reviews and states. 
+- a **review service** provides a subgraph for review
+- a **state service** provides a subgraph for states. This state is used by reviews.
+- both subgraphs are composed into **one supergraph** that is the only graph exposed to users. With that, users can interact with reviews and states as if they were implemented in one service. 
 
 ### The state service
 
