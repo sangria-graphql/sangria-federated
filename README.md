@@ -22,199 +22,83 @@ The library adds [Apollo's Federation Specification](https://www.apollographql.c
 
 To make it possible to use `_Any` as a scalar, the library upgrades the used marshaller.
 
-## How to use it?
+## implementation of the Apollo Federation Subgraph Compatibility
+
+A good example showing all different features is the [sangria implementation of the Apollo Federation Subgraph Compatibility](https://github.com/apollographql/apollo-federation-subgraph-compatibility/tree/main/implementations/sangria).
+
+## Example how to use it
+
+All the code of this example is available [here](./example).
 
 To be able to communicate with [Apollo's federation gateway](https://www.apollographql.com/docs/federation/gateway/), the graphql sangria service should be using both the federated schema and unmarshaller.
 
-As an example, let's consider an application using circe with a state and review service. 
-- The state service defines the state entity, annotated with ```@key("id")```. And for each entity, we need to define an entity resolver ([reference resolver](https://www.apollographql.com/docs/federation/entities/#resolving)), see code below:
-    ```scala
-    import sangria.federation.v1.Decoder
-    import io.circe.Json,  io.circe.generic.semiauto._
-    import sangria.schema._
-    
-    case class State(
-      id: Int,
-      key: String,
-      value: String)
-    
-    object State {
-    
-      case class StateArg(id: Int)
-    
-      implicit val decoder: Decoder[Json, StateArg] = deriveDecoder[StateArg].decodeJson(_)
-    
-      val stateResolver = EntityResolver[StateService, Json, State, StateArg](
-        __typeName = "State",
-        ev = State.decoder,
-        arg =>  env.getState(arg.id))
-    
-      val stateSchema =
-        ObjectType(
-          "State",
-          fields[Unit, State](
-            Field(
-              "id", IntType,
-              resolve = _.value.id),
-            Field(
-              "key", StringType,
-              resolve = _.value.key),
-            Field(
-              "value", StringType,
-              resolve = _.value.value))
-        ).copy(astDirectives = Vector(federation.Directives.Key("id")))
-    }
-    ```
-  
-    The entity resolver implements:
-    - the deserialization of the fields in `_Any` object to the EntityArg.
-    - how to fetch the EntityArg to get the proper Entity (in our case State).
-    
-    As for the query type, let's suppose the schema below:
-    ```scala
-    import sangria.schema._
-    
-    object StateAPI {
-    
-    val Query = ObjectType(
-      "Query",
-      fields[StateService, Unit](
-        Field(
-          name = "states", 
-          fieldType = ListType(State.stateSchema), 
-          resolve = _.ctx.getStates)))
-    }
-    ```
-  
-    Now in the definition of the GraphQL server, we federate the Query type and the unmarshaller while supplying the entity resolvers. Then, we use both the federated schema and unmarshaller as arguments for the server.
-    ```scala
-    def graphQL[F[_]: Effect]: GraphQL[F] = {
-      val (schema, um) = federation.Federation.federate[StateService, Json](
-        Schema(StateAPI.Query),
-        sangria.marshalling.circe.CirceInputUnmarshaller,
-        stateResolver)
-    
-      GraphQL(
-        schema,
-        env.pure[F])(implicitly[Effect[F]], um)
-    }
-    ```
-  
-    And, the GraphQL server should use the provided schema and unmarshaller as arguments for the sangria executor:
-    ```scala
-    import cats.effect._
-    import cats.implicits._
-    import io.circe._
-    import sangria.ast.Document
-    import sangria.execution._
-    import sangria.marshalling.InputUnmarshaller
-    import sangria.marshalling.circe.CirceResultMarshaller
-    import sangria.schema.Schema
-  
-    object GraphQL {
+As an example, let's consider the following services:
+- a review service provides a subgraph for review
+- a state service provides a subgraph for states. This state is used by reviews.
+- both subgraphs are composed into one supergraph that is the only graph to use by users. This supergraph is one GraphQ schema that exposes reviews and states. 
 
-      def apply[F[_], A](
-        schema: Schema[A, Unit],
-        userContext: F[A]
-      )(implicit F: Async[F], um: InputUnmarshaller[Json]): GraphQL[F] = new GraphQL[F] {
+### The state service
 
-        import scala.concurrent.ExecutionContext.Implicits.global
-        
-        def exec(
-          schema:        Schema[A, Unit],
-          userContext:   F[A],
-          query:         Document,
-          operationName: Option[String],
-          variables:     Json): F[Either[Json, Json]] = userContext.flatMap { ctx =>
-          
-            F.async { (cb: Either[Throwable, Json] => Unit) =>
-              Executor.execute(
-                schema           = schema,
-                queryAst         = query,
-                userContext      = ctx,
-                variables        = variables,
-                operationName    = operationName,
-                exceptionHandler = ExceptionHandler {
-                  case (_, e) ⇒ HandledException(e.getMessage)
-                }
-              ).onComplete {
-                case Success(value) => cb(Right(value))
-                case Failure(error) => cb(Left(error))
-              }
-            }
-          }.attempt.flatMap {
-            case Right(json)               => F.pure(json.asRight)
-            case Left(err: WithViolations) => ???
-            case Left(err)                 => ???
-          }
-      }
-    }
-    ```
-  
-- The review service defines the review type, which has a reference to the state type. And, for each entity referenced by another service, a [stub type](https://www.apollographql.com/docs/federation/entities/#referencing) should be created (containing just the minimal information that will allow to reference the entity).
-  ```scala
-  import sangria.schema._
-  
-  case class Review(
-    id: Int,
-    key: Option[String] = None,
-    state: State)
-    
-  object Review {
+The state service defines the state entity annotated with `@key("id")`.
 
-    val reviewSchema =
-      ObjectType(
-        "Review",
-        fields[Unit, Review](
-          Field(
-            "id", IntType,
-            resolve = _.value.id),
-          Field(
-            "key", OptionType(StringType),
-            resolve = _.value.key),
-          Field(
-            "state", State.stateSchema,
-            resolve = _.value.state)))
-  }
-  
-  case class State(id: Int)
+For each entity, we need to define an [entity resolver](https://www.apollographql.com/docs/federation/entities/#resolving).
 
-  object State {
-    
-    import sangria.federation.v1.Directives._
-  
-    val stateSchema =
-      ObjectType(
-        "State",
-        fields[Unit, State](
-          Field[Unit, State, Int, Int](
-            name = "id",
-            fieldType = IntType,
-            resolve = _.value.id).copy(astDirectives = Vector(External)))
-      ).copy(astDirectives = Vector(Key("id"), Extends))
-  }
-  ```
-  
-  In the end, the same code used to federate the state service is used to federate the review service.
+[Implementation of State](./example/state/src/main/scala/state/State.scala).
 
+The entity resolver implements:
+- the deserialization of the fields in `_Any` object to the EntityArg.
+- how to fetch the proper Entity (in our case `State`) based on the EntityArg.
 
-- The sangria GraphQL services endpoints can now be configured in the ```serviceList``` of [Apollo's Gatewqay](https://www.apollographql.com/docs/federation/gateway/#setup) as follows:
-    ```
-    const gateway = new ApolloGateway({
-      serviceList: [
-        { name: 'states', url: 'http://localhost:9081/api/graphql'},
-        { name: 'reviews', url: 'http://localhost:9082/api/graphql'}
-      ],
-      debug: true
-    })
-    ```
+The [GraphQL query type defines a simple query](./example/state/src/main/scala/state/StateAPI.scala).
+
+In the definition of the GraphQL server, we federate the Query type and the unmarshaller while supplying the entity resolvers.
+Then, we use both the federated schema and unmarshaller as arguments for the server:
+
+```scala
+def graphQL[F[_]: Async]: GraphQL[F, StateService] = {
+  val (schema, um) = Federation.federate[StateService, Any, Json](
+    Schema(StateAPI.Query),
+    sangria.marshalling.circe.CirceInputUnmarshaller,
+    stateResolver)
+
+  GraphQL(schema, env.pure[F])(Async[F], um)
+}
+```
+
+The GraphQL server uses the provided schema and unmarshaller as arguments for the sangria executor:
+[implementation](./example/common/src/main/scala/common/GraphQL.scala)
   
-All the code of the example is available [here](./example).
+### The review service
+
+- The review service defines the `Review` type, which has a reference to the `State` type.
+
+  [implementation of Review](./example/review/src/main/scala/review/Review.scala)
+
+- As `State` is implemented by the state service, we don't need to implement the whole state in the review service.
+Instead, for each entity implemented by another service, a [stub type](https://www.apollographql.com/docs/federation/entities/#referencing) should be created (containing just the minimal information that will allow to reference the entity).
+
+  [implementation of the stub type State](./example/review/src/main/scala/review/State.scala)
+(notice the usage of the @external directive).
+
+- In the end, the same code used to federate the state service is used to federate the review service.
+
+### Federation service
+
+The sangria GraphQL services endpoints can now be configured in the ```serviceList``` of [Apollo's Gatewqay](https://www.apollographql.com/docs/federation/gateway/#setup) as follows:
+```
+const gateway = new ApolloGateway({
+  serviceList: [
+    { name: 'states', url: 'http://localhost:9081/api/graphql'},
+    { name: 'reviews', url: 'http://localhost:9082/api/graphql'}
+  ],
+  debug: true
+})
+```
 
 ## Caution 🚨🚨
 
-- **This is a technology preview and should not be used in a production environment.**
-- The library upgrades the marshaller too, by making map values scalars (e.g. json objects as scalars). This can lead to security issues as discussed [here](http://www.petecorey.com/blog/2017/06/12/graphql-nosql-injection-through-json-types/).
+- **This is a technology preview. We are actively working on it and cannot promise a stable API yet**.
+- The library upgrades the marshaller to map values scalars (e.g. json objects as scalars). This can lead to security issues as discussed [here](http://www.petecorey.com/blog/2017/06/12/graphql-nosql-injection-through-json-types/).
 
 ## Contribute
 
