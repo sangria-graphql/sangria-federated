@@ -79,6 +79,8 @@ class FederationSpec extends AsyncFreeSpec {
             directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
 
             directive @override(from: String!) on FIELD_DEFINITION
+            
+            directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
           """)
           .extend(Document(
             Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
@@ -159,6 +161,8 @@ class FederationSpec extends AsyncFreeSpec {
             directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
 
             directive @override(from: String!) on FIELD_DEFINITION
+            
+            directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
           """)
           .extend(Document(
             Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
