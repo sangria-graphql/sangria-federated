@@ -75,6 +75,25 @@ object Directives {
         Argument("from", StringType)
       ),
       locations = Set(DirectiveLocation.FieldDefinition)
+    ),
+    Directive(
+      name = "tag",
+      arguments = List(
+        Argument("name", StringType)
+      ),
+      locations = Set(
+        DirectiveLocation.FieldDefinition,
+        DirectiveLocation.Object,
+        DirectiveLocation.Interface,
+        DirectiveLocation.Union,
+        DirectiveLocation.ArgumentDefinition,
+        DirectiveLocation.Scalar,
+        DirectiveLocation.Enum,
+        DirectiveLocation.EnumValue,
+        DirectiveLocation.InputObject,
+        DirectiveLocation.InputFieldDefinition
+      ),
+      repeatable = true
     )
   )
 
