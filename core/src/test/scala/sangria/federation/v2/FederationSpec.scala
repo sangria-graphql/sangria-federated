@@ -35,7 +35,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires"]) {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag"]) {
               query: Query
             }
 
@@ -109,7 +109,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires"]) {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag"]) {
               query: Query
             }
 
@@ -185,7 +185,7 @@ class FederationSpec extends AsyncFreeSpec {
       "should not include federation types" - {
         "in case no entity is defined" in {
           val schema = Federation.extend(
-            Schema.buildFromAst(graphql"""
+            Schema.buildFromAst(graphql"""                                  
                 schema {
                   query: Query
                 }
@@ -202,7 +202,7 @@ class FederationSpec extends AsyncFreeSpec {
             .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "type Query {\n  field: Int\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.0\", import: [\"@key\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\ntype Query {\n  field: Int\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
@@ -214,7 +214,7 @@ class FederationSpec extends AsyncFreeSpec {
               schema {
                 query: Query
               }
-
+              
               type Query {
                 states: [State]
               }
@@ -232,7 +232,7 @@ class FederationSpec extends AsyncFreeSpec {
             .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "type Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.0\", import: [\"@key\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\ntype Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
@@ -259,7 +259,7 @@ class FederationSpec extends AsyncFreeSpec {
           .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.0\", import: [\"@key\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\n\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
                 |    }
                 |  }
                 |}""".stripMargin))

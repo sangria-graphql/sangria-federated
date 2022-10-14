@@ -24,11 +24,8 @@ object Federation {
       case obj: ObjectType[Ctx, _] @unchecked if obj.astDirectives.exists(_.name == "key") => obj
     }.toList
 
-    val sdl = Some(schema.renderPretty(SchemaFilter.withoutGraphQLBuiltIn))
-
-    val schemaExtensionDefinition = ast.SchemaExtensionDefinition(
-      operationTypes = Vector.empty,
-      directives = Vector(
+    val extendedSchema = schema
+      .copy(astDirectives = Vector(
         ast.Directive(
           name = "link",
           arguments = Vector(
@@ -42,17 +39,19 @@ object Federation {
                 ast.StringValue("@override"),
                 ast.StringValue("@external"),
                 ast.StringValue("@provides"),
-                ast.StringValue("@requires")
+                ast.StringValue("@requires"),
+                ast.StringValue("@tag")
               ))
             )
           )
-        ))
-    )
+        )))
+
+    val sdl = Some(extendedSchema.renderPretty(SchemaFilter.withoutGraphQLBuiltIn))
 
     (entities match {
       case Nil =>
-        schema.extend(
-          ast.Document(Vector(queryType(_service), schemaExtensionDefinition)),
+        extendedSchema.extend(
+          ast.Document(Vector(queryType(_service))),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map("Query" -> Map("_service" -> (_ => _Service(sdl)))),
             AdditionalTypes(
@@ -64,8 +63,8 @@ object Federation {
           )
         )
       case entities =>
-        schema.extend(
-          ast.Document(Vector(queryType(_service, _entities), schemaExtensionDefinition)),
+        extendedSchema.extend(
+          ast.Document(Vector(queryType(_service, _entities))),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map(
               "Query" -> Map(
@@ -92,7 +91,7 @@ object Federation {
               Link__Purpose.Type)
           )
         )
-    }).copy(directives = Directives.definitions ::: schema.directives)
+    }).copy(directives = Directives.definitions ::: extendedSchema.directives)
   }
 
   def upgrade[Node](default: InputUnmarshaller[Node]): InputUnmarshaller[Node] =
