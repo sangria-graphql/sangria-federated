@@ -12,7 +12,10 @@ object StateGraphQLSchema {
     ObjectType(
       "State",
       fields[Unit, State](
-        Field[Unit, State, Int, Int](name = "id", fieldType = IntType, resolve = _.value.id)
-          .copy(astDirectives = Vector(External)))
-    ).copy(astDirectives = Vector(Key("id"), Extends))
+        Field[Unit, State, Int, Int](
+          name = "id",
+          fieldType = IntType,
+          resolve = _.value.id,
+          astDirectives = Vector(External)))
+    ).withDirectives(Key("id"), Extends)
 }

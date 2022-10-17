@@ -24,5 +24,5 @@ object StateGraphQLSchema {
         Field("id", IntType, resolve = _.value.id),
         Field("key", StringType, resolve = _.value.key),
         Field("value", StringType, resolve = _.value.value))
-    ).copy(astDirectives = Vector(Directives.Key("id")))
+    ).withDirective(Directives.Key("id"))
 }
