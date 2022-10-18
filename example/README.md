@@ -5,11 +5,12 @@ sbt start-all
 sbt stop-all
 ```
 
-### Start gateway
+### Start the federation router
 
 ```
-cd gateway
-npm install && npm start
+cd example # if not already
+cd router
+./start.sh
 ```
 
 ### Using the exposed GraphQL endpoint
