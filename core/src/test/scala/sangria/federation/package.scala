@@ -1,8 +1,10 @@
 package sangria
 
+import org.scalatest.matchers.must.Matchers.be
+import org.scalatest.matchers.{MatchResult, Matcher}
+import sangria.renderer.QueryRenderer
 import sangria.schema.Schema
 import sangria.schema.SchemaChange.AbstractChange
-import org.scalatest.matchers.{MatchResult, Matcher}
 
 package object federation {
 
@@ -15,5 +17,11 @@ package object federation {
         s"Schemas have following changes:\n  ${changes.mkString("\n  ")}",
         s"Schemas should be different but no changes can be found"
       )
+    }
+
+  def renderLike(expected: String): Matcher[ast.Directive] =
+    Matcher { directive: ast.Directive =>
+      val rendered = QueryRenderer.renderPretty(directive)
+      be(expected)(rendered)
     }
 }

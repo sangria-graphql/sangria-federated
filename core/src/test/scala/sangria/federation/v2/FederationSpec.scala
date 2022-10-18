@@ -72,14 +72,14 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
 
-            directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+            directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
 
             directive @shareable on OBJECT | FIELD_DEFINITION
 
             directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
 
             directive @override(from: String!) on FIELD_DEFINITION
-            
+
             directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
           """)
           .extend(Document(
@@ -154,14 +154,14 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @key(fields: _FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
 
-            directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+            directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
 
             directive @shareable on OBJECT | FIELD_DEFINITION
 
             directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
 
             directive @override(from: String!) on FIELD_DEFINITION
-            
+
             directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
           """)
           .extend(Document(
@@ -185,7 +185,7 @@ class FederationSpec extends AsyncFreeSpec {
       "should not include federation types" - {
         "in case no entity is defined" in {
           val schema = Federation.extend(
-            Schema.buildFromAst(graphql"""                                  
+            Schema.buildFromAst(graphql"""
                 schema {
                   query: Query
                 }
@@ -214,7 +214,7 @@ class FederationSpec extends AsyncFreeSpec {
               schema {
                 query: Query
               }
-              
+
               type Query {
                 states: [State]
               }
