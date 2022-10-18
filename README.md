@@ -82,17 +82,20 @@ Instead, for each entity implemented by another service, a [stub type](https://w
 
 - In the end, the same code used to federate the state service is used to federate the review service.
 
-### Federation service
+### Federation router
 
-The sangria GraphQL services endpoints can now be configured in the ```serviceList``` of [Apollo's Gatewqay](https://www.apollographql.com/docs/federation/gateway/#setup) as follows:
+The [federation router](https://www.apollographql.com/docs/router/) can expose the GraphQL endpoint, and resolve any GraphQL query using our sangria GraphQL services.
+
+The sangria GraphQL services endpoints are configured in the [supergraph configuration](./example/router/supergraph-local.yaml), used by rover to compose the supergraph:
 ```
-const gateway = new ApolloGateway({
-  serviceList: [
-    { name: 'states', url: 'http://localhost:9081/api/graphql'},
-    { name: 'reviews', url: 'http://localhost:9082/api/graphql'}
-  ],
-  debug: true
-})
+federation_version: 2
+subgraphs:
+  state:
+    schema:
+      subgraph_url: http://localhost:9081/api/graphql
+  review:
+    schema:
+      subgraph_url: http://localhost:9082/api/graphql
 ```
 
 ## Caution 🚨🚨
