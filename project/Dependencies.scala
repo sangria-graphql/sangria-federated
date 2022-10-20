@@ -20,7 +20,7 @@ object Dependencies {
   val circeParser = "io.circe" %% "circe-parser" % V.circe
   val circeOptics = "io.circe" %% "circe-optics" % V.circeOptics
 
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.13"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.14"
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
 }
