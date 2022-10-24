@@ -180,9 +180,9 @@ impl Plugin for FeatureToggle {
 
     fn supergraph_service(&self, service: supergraph::BoxService) -> supergraph::BoxService {
         let handler = move |request: supergraph::Request| {
-            // PoC limitation: choose between 2 constant schemas
+            // PoC limitation: choose between 2 constant schemas instead of self.supergraph_sdl
             let supergraph_sdl = schema_sdl(&request);
-            tracing::info!("{:?}", &request.supergraph_request);
+            // tracing::info!("{:?}", &request.supergraph_request);
 
             let query = &request
                 .supergraph_request
@@ -191,6 +191,26 @@ impl Plugin for FeatureToggle {
                 .as_ref()
                 .unwrap()
                 .to_string();
+
+            let configuration = apollo_router::Configuration::default();
+            let schema =
+                apollo_router::spec::Schema::parse(&supergraph_sdl, &configuration).unwrap();
+            let result = apollo_router::spec::Query::parse(query, &schema, &configuration);
+            tracing::info!("Query parsing: {:?}", &result);
+            if let Err(err) = result {
+                let res: supergraph::Response = supergraph::Response::error_builder()
+                    .error(
+                        apollo_router::graphql::Error::builder()
+                            .message(err.to_string())
+                            .build(),
+                    )
+                    .status_code(http::StatusCode::BAD_REQUEST)
+                    .context(request.context.clone())
+                    .build()
+                    .expect("response is valid");
+                return Ok(ControlFlow::Break(res));
+            }
+
             // if introspection then
             let result = introspect::batch_introspect(
                 supergraph_sdl.as_ref(),
@@ -210,16 +230,14 @@ impl Plugin for FeatureToggle {
                 Err(_) => None,
             };
 
-            async {
-                match introspection_result {
-                    Some(res) => Ok(ControlFlow::Break(res)),
-                    None => Ok(ControlFlow::Continue(request)),
-                }
+            match introspection_result {
+                Some(res) => Ok(ControlFlow::Break(res)),
+                None => Ok(ControlFlow::Continue(request)),
             }
         };
 
         ServiceBuilder::new()
-            .checkpoint_async(handler)
+            .checkpoint(handler)
             .buffered()
             .service(service)
             .boxed()

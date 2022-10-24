@@ -104,8 +104,6 @@ dependencies = [
 [[package]]
 name = "apollo-router"
 version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "733554b961d94528386eac2668a45fb5411ec5f6cdfb1636a7314bc110ba1647"
 dependencies = [
  "access-json",
  "ansi_term",
@@ -2883,6 +2881,7 @@ dependencies = [
  "apollo-router",
  "async-trait",
  "futures",
+ "http",
  "schemars",
  "serde",
  "serde_json",
