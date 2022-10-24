@@ -15,6 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.58"
+apollo-parser = "0.2.12"
 # Note if you update these dependencies then also update xtask/Cargo.toml
 apollo-router = "1.2.0"
 async-trait = "0.1.52"

@@ -2879,6 +2879,7 @@ name = "router-test"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "apollo-parser",
  "apollo-router",
  "async-trait",
  "futures",
