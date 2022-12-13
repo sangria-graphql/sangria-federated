@@ -163,7 +163,7 @@ impl Plugin for FeatureToggle {
 
     async fn new(init: PluginInit<Self::Config>) -> Result<Self, BoxError> {
         tracing::info!("{}", init.config.message);
-        // tracing::info!("{}", &init.supergraph_sdl);
+        tracing::info!("{}", &init.supergraph_sdl);
         let parser = apollo_parser::Parser::new(&init.supergraph_sdl);
         let ast = parser.parse();
         // ast.document().definitions().

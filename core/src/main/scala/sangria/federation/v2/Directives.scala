@@ -200,16 +200,19 @@ object Directives {
       ast.Directive(name = "tag", arguments = Vector(ast.Argument("name", ast.StringValue(name))))
   }
 
-  val definitions: List[Directive] = List(
-    Link.definition,
-    Key.definition,
-    ExtendsDefinition,
-    ShareableDefinition,
-    InaccessibleDefinition,
-    Override.Definition,
-    ExternalDefinition,
-    Provides.definition,
-    Requires.definition,
-    Tag.definition
-  )
+  /** [@composeDirective](https://www.apollographql.com/docs/federation/federated-types/federated-directives#composedirective)
+    */
+  object ComposeDirective {
+    val definition: Directive = Directive(
+      name = "composeDirective",
+      arguments = List(Argument("name", StringType)),
+      locations = Set(DirectiveLocation.Schema),
+      repeatable = true
+    )
+
+    def apply(name: String): ast.Directive =
+      ast.Directive(
+        name = "composeDirective",
+        arguments = Vector(ast.Argument("name", ast.StringValue(name))))
+  }
 }
