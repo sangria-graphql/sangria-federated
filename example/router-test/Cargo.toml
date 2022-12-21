@@ -19,7 +19,7 @@ apollo-compiler = "0.4.1"
 apollo-encoder = "0.4.0"
 apollo-parser = "0.4.1"
 # Note if you update these dependencies then also update xtask/Cargo.toml
-apollo-router = "1.2.0"
+apollo-router = "1.6.0"
 async-trait = "0.1.52"
 futures = "0.3.21"
 http = "0.2.8"
@@ -28,7 +28,7 @@ serde = "1.0.136"
 serde_json = "1.0.79"
 tokio = { version = "1.17.0", features = ["full"] }
 tower = { version = "0.4.12", features = ["full"] }
-tracing = "=0.1.34"
+tracing = "*"
 
 [dev-dependencies]
 indoc = "1.0.8"
