@@ -1,4 +1,4 @@
-use apollo_compiler::{ApolloCompiler, ApolloDiagnostic};
+use apollo_compiler::{ApolloCompiler, ApolloDiagnostic, FileId};
 use apollo_parser::ast::{AstNode, Definition};
 use apollo_parser::Parser;
 
@@ -12,7 +12,7 @@ use apollo_router::services::supergraph;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::ops::ControlFlow;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tower::BoxError;
 use tower::ServiceBuilder;
 use tower::ServiceExt;
@@ -87,25 +87,36 @@ impl RawSupergraph {
                 Definition::InputObjectTypeExtension(e) => pub_schema.input_object(e.try_into()?),
             }
         }
+        let mut compiler = ApolloCompiler::new();
+        let sdl = pub_schema.to_string();
+        let schema_id = compiler.create_schema(&sdl, "public schema");
         Ok(PublicGraph {
-            sdl: pub_schema.to_string(),
+            compiler: Arc::new(Mutex::new(compiler)),
+            schema_id: schema_id,
+            sdl: sdl,
         })
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 struct PublicGraph {
+    compiler: Arc<Mutex<ApolloCompiler>>,
+    schema_id: FileId,
     sdl: String,
 }
 
 impl PublicGraph {
     fn validate_query(&self, operation: &str) -> Vec<ApolloDiagnostic> {
-        let ctx = ApolloCompiler::new(&format!("{}\n{}", &self.sdl, operation));
-        ctx.validate()
+        let compiler = &self.compiler.clone();
+        let mut compiler = compiler.lock().unwrap();
+        // let mut compiler = compiler.get_mut().unwrap();
+        let executable_id = compiler.create_executable(operation, "query");
+        compiler.validate()
+        // let ctx = ApolloCompiler::new(&format!("{}\n{}", &self.sdl, operation));
+        // ctx.validate()
     }
 }
 
-#[derive(Debug)]
 struct FeatureToggle {
     #[allow(dead_code)]
     configuration: Conf,
@@ -499,7 +510,7 @@ type State
     #[test]
     fn issue_with_apollo_compiler() {
         // https://github.com/apollographql/apollo-rs/issues/392
-        let input = indoc! {r#"
+        let schema = indoc! {r#"
             type Review {
               id: Int!
             }
@@ -507,7 +518,9 @@ type State
             type Query {
               reviews: [Review!]!
             }
+        "#};
 
+        let query = indoc! {r#"
             {
               reviews {
                 id
@@ -516,12 +529,28 @@ type State
             }
         "#};
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let failing_query = indoc! {r#"
+            {
+              revies {
+                id
+                key
+              }
+            }
+        "#};
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_schema(schema, "schema");
+
+        let id = compiler.create_executable(failing_query, "query");
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
-        assert!(diagnostics.is_empty());
+        assert!(!diagnostics.is_empty());
+
+        // how to re-use the schema to validate another query?
+        compiler.update_executable(id, query);
+        assert!(compiler.validate().is_empty());
     }
 
     fn assert_no_errors(errors: Vec<ApolloDiagnostic>) {
