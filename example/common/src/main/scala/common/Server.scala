@@ -3,15 +3,17 @@ package common
 import cats.data.NonEmptyList
 import cats.effect._
 import cats.implicits._
+import com.comcast.ip4s._
 import io.circe.Json
 import org.http4s._
-import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.circe._
 import org.http4s.dsl._
+import org.http4s.ember.server._
 import org.http4s.headers.Location
 import org.http4s.implicits._
-import org.http4s.server.Server
+import org.http4s.server.{Router, Server}
 import org.typelevel.ci.CIString
+import org.typelevel.log4cats.Logger
 import sangria.execution.Middleware
 import sangria.federation.tracing.ApolloFederationTracing
 
@@ -25,8 +27,9 @@ object Server {
   }
 
   def resource[F[_]: Async, Ctx](
+      logger: Logger[F],
       graphQL: GraphQL[F, Ctx],
-      port: Int
+      port: Port
   ): Resource[F, Server] = {
 
     object dsl extends Http4sDsl[F]
@@ -51,9 +54,12 @@ object Server {
         PermanentRedirect(Location(uri"/playground"))
     }
 
-    BlazeServerBuilder[F]
-      .bindHttp(port, "localhost")
-      .withHttpApp(routes.orNotFound)
-      .resource
+    EmberServerBuilder
+      .default[F]
+      .withHost(host"localhost")
+      .withPort(port)
+      .withHttpApp(Router("/" -> routes).orNotFound)
+      .withLogger(logger)
+      .build
   }
 }
