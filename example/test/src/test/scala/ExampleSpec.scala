@@ -1,6 +1,7 @@
-import cats.effect.{Deferred, ExitCode, IO, Resource}
-import weaver._
+import cats.effect.{Deferred, IO, Resource}
 import eu.monniot.process.Process
+import weaver._
+
 import scala.concurrent.duration._
 
 object ExampleSpec extends SimpleIOSuite {
@@ -38,15 +39,13 @@ object ExampleSpec extends SimpleIOSuite {
           }
           .compile
           .drain
-          .timeout(20.seconds)
-          .attempt
+          .start
         _ <- process.stderr
           .through(fs2.text.utf8.decode)
           .evalTap(s => log.error(s))
           .compile
           .drain
-          .timeout(20.seconds)
-          .attempt
+          .start
         exposed <- graphqlEndpointExposed.get.timeout(20.seconds)
       } yield expect(exposed)
     }
