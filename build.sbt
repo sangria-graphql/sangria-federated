@@ -84,7 +84,7 @@ lazy val exampleCommon = exampleProject("example-common")
   .settings(
     libraryDependencies ++= Seq(
       Dependencies.catsEffect,
-      Dependencies.http4sBlazeServer,
+      Dependencies.http4sEmberServer,
       Dependencies.http4sCirce,
       Dependencies.http4sDsl,
       Dependencies.circeOptics,
