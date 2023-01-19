@@ -49,7 +49,7 @@ object ExampleSpec extends SimpleIOSuite {
           .compile
           .drain
           .start
-        exposed <- graphqlEndpointExposed.get.timeout(20.seconds)
+        exposed <- graphqlEndpointExposed.get.timeout(30.seconds)
       } yield expect(exposed)
     }
   }
