@@ -24,10 +24,9 @@ object ExampleSpec extends SimpleIOSuite {
     }
 
   test("examples can be federated") { (_, log) =>
-    routerResource(log).use { case (process, _) =>
+    log.info("starting router") >> routerResource(log).use { case (process, _) =>
       for {
         graphqlEndpointExposed <- Deferred[IO, Boolean]
-        _ <- log.info("starting router")
         _ <- process.stdout
           .through(fs2.text.utf8.decode)
           .evalTap { s =>
