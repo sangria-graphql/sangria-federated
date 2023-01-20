@@ -1,9 +1,22 @@
 package sangria.federation.v2
 
 import sangria.ast
+import sangria.federation.v2.Directives.{ComposeDirective, Link}
 import sangria.marshalling.InputUnmarshaller
 import sangria.renderer.SchemaFilter
 import sangria.schema._
+import sangria.util.tag.@@
+
+case class Spec(url: String) extends AnyVal
+
+/** Those custom directives will be exposed as
+  * [[https://www.apollographql.com/docs/federation/federated-types/federated-directives#composedirective `@composeDirectives`]]
+  */
+case class CustomDirectivesDefinition(included: Map[Spec, List[Directive]])
+object CustomDirectivesDefinition {
+  def apply(item: (Spec, List[Directive])*): CustomDirectivesDefinition =
+    new CustomDirectivesDefinition(item.toMap)
+}
 
 object Federation {
   import Query._
@@ -12,10 +25,49 @@ object Federation {
       schema: Schema[Ctx, Val],
       um: InputUnmarshaller[Node],
       resolvers: EntityResolver[Ctx, Node]*
-  ): (Schema[Ctx, Val], InputUnmarshaller[Node]) = (extend(schema, resolvers), upgrade(um))
+  ): (Schema[Ctx, Val], InputUnmarshaller[Node]) =
+    (extend(schema, Nil, Nil, resolvers), upgrade(um))
+
+  def federate[Ctx, Val, Node](
+      schema: Schema[Ctx, Val],
+      customDirectives: CustomDirectivesDefinition,
+      um: InputUnmarshaller[Node],
+      resolvers: EntityResolver[Ctx, Node]*
+  ): (Schema[Ctx, Val], InputUnmarshaller[Node]) =
+    (extend(schema, customDirectives, resolvers), upgrade(um))
 
   def extend[Ctx, Val, Node](
       schema: Schema[Ctx, Val],
+      resolvers: Seq[EntityResolver[Ctx, Node]]): Schema[Ctx, Val] =
+    extend(schema, Nil, Nil, resolvers)
+
+  /** High level API allowing to expose custom directives
+    */
+  def extend[Ctx, Val, Node](
+      schema: Schema[Ctx, Val],
+      customDirectives: CustomDirectivesDefinition,
+      resolvers: Seq[EntityResolver[Ctx, Node]]): Schema[Ctx, Val] = {
+
+    val additionalLinkImports: List[ast.Directive @@ Link] =
+      customDirectives.included.iterator.map { case (spec, directives) =>
+        Directives.Link(
+          url = spec.url,
+          `import` = Some(directives.iterator.map(d => Link__Import("@" + d.name)).toVector)
+        )
+      }.toList
+    val composeDirectives: List[ast.Directive @@ ComposeDirective] =
+      customDirectives.included.values.flatMap { directives =>
+        directives.map(d => Directives.ComposeDirective(d))
+      }.toList
+    val schemaWithCustomDirectives =
+      schema.copy(directives = schema.directives ++ customDirectives.included.values.flatten)
+    extend(schemaWithCustomDirectives, additionalLinkImports, composeDirectives, resolvers)
+  }
+
+  def extend[Ctx, Val, Node](
+      schema: Schema[Ctx, Val],
+      additionalLinkImports: List[ast.Directive @@ Link],
+      composeDirectives: List[ast.Directive @@ ComposeDirective],
       resolvers: Seq[EntityResolver[Ctx, Node]]): Schema[Ctx, Val] = {
     val resolversMap = resolvers.map(r => r.typename -> r).toMap
     val representationsArg = Argument("representations", ListInputType(_Any.__type[Node]))
@@ -24,28 +76,33 @@ object Federation {
       case obj: ObjectType[Ctx, _] @unchecked if obj.astDirectives.exists(_.name == "key") => obj
     }.toList
 
-    val extendedSchema = schema
-      .copy(astDirectives = Vector(
-        ast.Directive(
-          name = "link",
-          arguments = Vector(
-            ast.Argument("url", ast.StringValue("https://specs.apollo.dev/federation/v2.0")),
-            ast.Argument(
-              "import",
-              ast.ListValue(Vector(
-                ast.StringValue("@key"),
-                ast.StringValue("@shareable"),
-                ast.StringValue("@inaccessible"),
-                ast.StringValue("@override"),
-                ast.StringValue("@external"),
-                ast.StringValue("@provides"),
-                ast.StringValue("@requires"),
-                ast.StringValue("@tag")
-              ))
-            )
-          )
-        )))
+    val federationDirectives: List[Directive] = List(
+      Directives.Key.definition,
+      Directives.ExtendsDefinition,
+      Directives.ShareableDefinition,
+      Directives.InaccessibleDefinition,
+      Directives.Override.Definition,
+      Directives.ExternalDefinition,
+      Directives.Provides.definition,
+      Directives.Requires.definition,
+      Directives.Tag.definition
+    )
 
+    val importedDirectives: List[Directive] =
+      if (composeDirectives.nonEmpty)
+        Directives.ComposeDirective.definition :: federationDirectives
+      else
+        federationDirectives
+
+    val federationV2Link = Directives.Link(
+      url = "https://specs.apollo.dev/federation/v2.1",
+      `import` = Some(importedDirectives.map(d => Link__Import("@" + d.name)).toVector)
+    )
+
+    val addedDirectives: Vector[ast.Directive] =
+      (federationV2Link :: additionalLinkImports ::: composeDirectives).toVector
+
+    val extendedSchema = schema.copy(astDirectives = addedDirectives)
     val sdl = Some(extendedSchema.renderPretty(SchemaFilter.withoutGraphQLBuiltIn))
 
     (entities match {
@@ -91,7 +148,8 @@ object Federation {
               Link__Purpose.Type)
           )
         )
-    }).copy(directives = Directives.definitions ::: extendedSchema.directives)
+    }).copy(directives =
+      Directives.Link.definition :: federationDirectives ::: extendedSchema.directives)
   }
 
   def upgrade[Node](default: InputUnmarshaller[Node]): InputUnmarshaller[Node] =

@@ -2,43 +2,49 @@ package sangria.federation.v2
 
 import sangria.ast
 import sangria.schema._
+import sangria.util.tag.@@
+import sangria.util.tag
 
 object Directives {
 
-  object Link {
-    val definition: Directive = Directive(
-      name = "link",
-      arguments = List(
-        Argument("url", StringType),
-        Argument("as", OptionInputType(StringType)),
-        Argument("for", OptionInputType(Link__Purpose.Type)),
-        Argument("import", OptionInputType(ListInputType(OptionInputType(Link__Import.Type))))
-      ),
-      locations = Set(DirectiveLocation.Schema),
-      repeatable = true
-    )
+  trait Link
 
-    def apply(url: String, as: String): ast.Directive =
+  object Link {
+    val definition: Directive @@ Link = tag[Link](
+      Directive(
+        name = "link",
+        arguments = List(
+          Argument("url", StringType),
+          Argument("as", OptionInputType(StringType)),
+          Argument("for", OptionInputType(Link__Purpose.Type)),
+          Argument("import", OptionInputType(ListInputType(OptionInputType(Link__Import.Type))))
+        ),
+        locations = Set(DirectiveLocation.Schema),
+        repeatable = true
+      ))
+
+    def apply(url: String, as: String): ast.Directive @@ Link =
       apply(url = url, as = Some(as))
 
-    def apply(url: String, `for`: Link__Purpose.Value): ast.Directive =
+    def apply(url: String, `for`: Link__Purpose.Value): ast.Directive @@ Link =
       apply(url = url, `for` = Some(`for`))
 
     def apply(
         url: String,
         as: Option[String] = None,
         `for`: Option[Link__Purpose.Value] = None,
-        `import`: Option[Vector[Abstract_Link__Import]] = None): ast.Directive =
-      ast.Directive(
-        name = "link",
-        arguments = Vector(
-          Some(ast.Argument("url", ast.StringValue(url))),
-          as.map(v => ast.Argument("as", ast.StringValue(v))),
-          `for`.map(v => ast.Argument("for", ast.EnumValue(Link__Purpose.Type.coerceOutput(v)))),
-          `import`.map(v =>
-            ast.Argument("import", ast.ListValue(v.map(v => Abstract_Link__Import.toAst(v)))))
-        ).flatten
-      )
+        `import`: Option[Vector[Abstract_Link__Import]] = None): ast.Directive @@ Link =
+      tag[Link](
+        ast.Directive(
+          name = "link",
+          arguments = Vector(
+            Some(ast.Argument("url", ast.StringValue(url))),
+            as.map(v => ast.Argument("as", ast.StringValue(v))),
+            `for`.map(v => ast.Argument("for", ast.EnumValue(Link__Purpose.Type.coerceOutput(v)))),
+            `import`.map(v =>
+              ast.Argument("import", ast.ListValue(v.map(v => Abstract_Link__Import.toAst(v)))))
+          ).flatten
+        ))
   }
 
   /** [@key](https://www.apollographql.com/docs/federation/federated-types/federated-directives#key)
@@ -200,16 +206,26 @@ object Directives {
       ast.Directive(name = "tag", arguments = Vector(ast.Argument("name", ast.StringValue(name))))
   }
 
-  val definitions: List[Directive] = List(
-    Link.definition,
-    Key.definition,
-    ExtendsDefinition,
-    ShareableDefinition,
-    InaccessibleDefinition,
-    Override.Definition,
-    ExternalDefinition,
-    Provides.definition,
-    Requires.definition,
-    Tag.definition
-  )
+  trait ComposeDirective
+
+  /** [@composeDirective](https://www.apollographql.com/docs/federation/federated-types/federated-directives#composedirective)
+    */
+  object ComposeDirective {
+    val definition: Directive @@ ComposeDirective = tag[ComposeDirective](
+      Directive(
+        name = "composeDirective",
+        arguments = List(Argument("name", StringType)),
+        locations = Set(DirectiveLocation.Schema),
+        repeatable = true
+      ))
+
+    def apply(name: String): ast.Directive @@ ComposeDirective =
+      tag[ComposeDirective](
+        ast.Directive(
+          name = "composeDirective",
+          arguments = Vector(ast.Argument("name", ast.StringValue(name)))))
+
+    def apply(directive: Directive): ast.Directive @@ ComposeDirective =
+      apply("@" + directive.name)
+  }
 }
