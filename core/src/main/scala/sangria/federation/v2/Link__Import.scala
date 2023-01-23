@@ -18,9 +18,15 @@ object Abstract_Link__Import {
     }
 }
 
-case class Link__Import(value: String) extends Abstract_Link__Import
-case class Link__Import_Object(name: String, as: Option[String] = None)
-    extends Abstract_Link__Import
+case class Link__Import(value: String) extends Abstract_Link__Import {
+  def as(as: String): Link__Import_Object = new Link__Import_Object(name = value, as = Some(as))
+}
+case class Link__Import_Object(name: String, as: Option[String]) extends Abstract_Link__Import
+object Link__Import_Object {
+  def apply(name: String): Link__Import_Object = new Link__Import_Object(name = name, as = None)
+  def apply(name: String, as: String): Link__Import_Object =
+    new Link__Import_Object(name = name, as = Some(as))
+}
 
 object Link__Import {
 

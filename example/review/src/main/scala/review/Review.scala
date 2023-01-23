@@ -1,7 +1,7 @@
 package review
 
+import common.CustomDirectives
 import sangria.schema._
-import common.Directives.Feature
 
 case class Review(id: Int, key: Option[String] = None, state: State)
 
@@ -16,7 +16,7 @@ object ReviewGraphQLSchema {
           "key",
           OptionType(StringType),
           resolve = _.value.key,
-          astDirectives = Vector(Feature("review-key"))),
+          astDirectives = Vector(CustomDirectives.Feature("review-key"))),
         Field("state", StateGraphQLSchema.schema, resolve = _.value.state)
       )
     )

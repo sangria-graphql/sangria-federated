@@ -39,20 +39,13 @@ ThisBuild / githubWorkflowPublish := Seq(
   )
 )
 
-lazy val modules: List[ProjectReference] = List(
-  core,
-  exampleCommon,
-  exampleReview,
-  exampleState
-)
-
 lazy val root = (project in file("."))
   .settings(
     name := "sangria-federated",
     description := "Federation for Sangria"
   )
   .settings(noPublishSettings)
-  .aggregate(modules: _*)
+  .aggregate(core, exampleCommon, exampleReview, exampleState, exampleTest)
 
 lazy val core = libraryProject("core")
   .settings(
@@ -91,13 +84,20 @@ lazy val exampleCommon = exampleProject("example-common")
   .settings(
     libraryDependencies ++= Seq(
       Dependencies.catsEffect,
-      Dependencies.http4sBlazeServer,
+      Dependencies.http4sEmberServer,
       Dependencies.http4sCirce,
       Dependencies.http4sDsl,
       Dependencies.circeOptics,
       Dependencies.sangria,
       Dependencies.sangriaCirce
     )
+  )
+
+lazy val exampleTest = exampleProject("example-test")
+  .dependsOn(exampleReview, exampleState)
+  .settings(
+    libraryDependencies ++= Seq(Dependencies.weaver, Dependencies.fs2Process).map(_ % Test),
+    testFrameworks += new TestFramework("weaver.framework.CatsEffect")
   )
 
 def libraryProject(name: String) = newProject(name)
