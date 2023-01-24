@@ -1,4 +1,5 @@
-use apollo_compiler::{ApolloCompiler, ApolloDiagnostic, FileId};
+use apollo_compiler::hir::TypeSystem;
+use apollo_compiler::{ApolloCompiler, ApolloDiagnostic, FileId, HirDatabase};
 use apollo_parser::ast::{AstNode, Definition};
 use apollo_parser::Parser;
 
@@ -12,7 +13,7 @@ use apollo_router::services::supergraph;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::ops::ControlFlow;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tower::BoxError;
 use tower::ServiceBuilder;
 use tower::ServiceExt;
@@ -89,31 +90,25 @@ impl RawSupergraph {
         }
         let mut compiler = ApolloCompiler::new();
         let sdl = pub_schema.to_string();
-        let schema_id = compiler.add_type_system(&sdl, "public schema");
-        Ok(PublicGraph {
-            compiler: Arc::new(Mutex::new(compiler)),
-            schema_id: schema_id,
-            sdl: sdl,
-        })
+        compiler.add_type_system(&sdl, "public schema");
+        let type_system = compiler.db.type_system();
+        Ok(PublicGraph { type_system, sdl })
     }
 }
 
 #[derive(Clone)]
 struct PublicGraph {
-    compiler: Arc<Mutex<ApolloCompiler>>,
-    schema_id: FileId,
+    type_system: Arc<TypeSystem>,
     sdl: String,
 }
 
 impl PublicGraph {
     fn validate_query(&self, operation: &str) -> Vec<ApolloDiagnostic> {
-        let compiler = &self.compiler.clone();
-        let mut compiler = compiler.lock().unwrap();
-        // let mut compiler = compiler.get_mut().unwrap();
-        let executable_id = compiler.add_executable(operation, "query");
+        let type_system = std::sync::Arc::clone(&self.type_system);
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_executable(operation, "query.graphql");
+        compiler.set_type_system_hir(type_system);
         compiler.validate()
-        // let ctx = ApolloCompiler::new(&format!("{}\n{}", &self.sdl, operation));
-        // ctx.validate()
     }
 }
 
@@ -371,7 +366,7 @@ type State
 
     #[tokio::test]
     async fn basic_test() -> Result<(), BoxError> {
-        let test_harness = TestHarness::builder()
+        let _ = TestHarness::builder()
             .configuration_json(serde_json::json!({
                 "plugins": {
                     "router_test.feature_toggle": {
@@ -380,7 +375,7 @@ type State
                 }
             }))
             .unwrap()
-            .build()
+            .build_supergraph()
             .await
             .unwrap();
         // let request = supergraph::Request::canned_builder().build().unwrap();
@@ -549,7 +544,6 @@ type State
         }
         assert!(!diagnostics.is_empty());
 
-        // how to re-use the schema to validate another query?
         compiler.update_executable(id, query);
         assert!(compiler.validate().is_empty());
     }
