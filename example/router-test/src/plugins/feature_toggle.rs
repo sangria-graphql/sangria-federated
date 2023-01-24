@@ -205,6 +205,7 @@ impl Plugin for FeatureToggle {
                         .error(
                             apollo_router::graphql::Error::builder()
                                 .message(format!("{}", errors.get(0).unwrap()))
+                                .extension_code("extension_code")
                                 .build(),
                         )
                         .status_code(http::StatusCode::BAD_REQUEST)
