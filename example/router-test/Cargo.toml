@@ -15,7 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.58"
-apollo-compiler = "0.5.0"
+apollo-compiler = "0.6.0"
 apollo-encoder = "0.4.0"
 apollo-parser = "0.4.1"
 # Note if you update these dependencies then also update xtask/Cargo.toml

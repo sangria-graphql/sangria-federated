@@ -89,7 +89,7 @@ impl RawSupergraph {
         }
         let mut compiler = ApolloCompiler::new();
         let sdl = pub_schema.to_string();
-        let schema_id = compiler.create_schema(&sdl, "public schema");
+        let schema_id = compiler.add_type_system(&sdl, "public schema");
         Ok(PublicGraph {
             compiler: Arc::new(Mutex::new(compiler)),
             schema_id: schema_id,
@@ -110,7 +110,7 @@ impl PublicGraph {
         let compiler = &self.compiler.clone();
         let mut compiler = compiler.lock().unwrap();
         // let mut compiler = compiler.get_mut().unwrap();
-        let executable_id = compiler.create_executable(operation, "query");
+        let executable_id = compiler.add_executable(operation, "query");
         compiler.validate()
         // let ctx = ApolloCompiler::new(&format!("{}\n{}", &self.sdl, operation));
         // ctx.validate()
@@ -540,9 +540,9 @@ type State
         "#};
 
         let mut compiler = ApolloCompiler::new();
-        compiler.create_schema(schema, "schema");
+        compiler.add_type_system(schema, "schema");
 
-        let id = compiler.create_executable(failing_query, "query");
+        let id = compiler.add_executable(failing_query, "query");
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
