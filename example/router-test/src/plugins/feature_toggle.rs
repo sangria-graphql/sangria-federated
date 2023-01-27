@@ -1,5 +1,5 @@
 use apollo_compiler::hir::TypeSystem;
-use apollo_compiler::{ApolloCompiler, ApolloDiagnostic, FileId, HirDatabase};
+use apollo_compiler::{ApolloCompiler, ApolloDiagnostic, HirDatabase};
 use apollo_parser::ast::{AstNode, Definition};
 use apollo_parser::Parser;
 
@@ -157,7 +157,6 @@ impl Plugin for FeatureToggle {
                             .for_features(vec!["review-key".to_string()])
                             .unwrap(),
                     )
-                    .clone()
                 } else {
                     public_schema.clone()
                 };
@@ -193,7 +192,7 @@ impl Plugin for FeatureToggle {
                         "{}",
                         errors
                             .iter()
-                            .fold("".to_string(), |acc, x| format!("{}\n{}", acc, x))
+                            .fold("".to_string(), |acc, x| format!("{acc}\n{x}"))
                     );
                     // TODO: add all errors
                     let res: supergraph::Response = supergraph::Response::error_builder()
