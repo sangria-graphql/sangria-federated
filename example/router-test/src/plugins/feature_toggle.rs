@@ -433,10 +433,10 @@ type State
         assert_eq!(
             &public_schema.sdl,
             indoc! {r#"
-                type Review  {
+                type Review {
                   id: Int!
                 }
-                type Query  {
+                type Query {
                   reviews: [Review!]!
                 }
             "#}
@@ -482,11 +482,11 @@ type State
         assert_eq!(
             &public_schema.sdl,
             indoc! {r#"
-                type Review  {
+                type Review {
                   id: Int!
                   key: String @feature(name: "review-key")
                 }
-                type Query  {
+                type Query {
                   reviews: [Review!]!
                 }
             "#}
