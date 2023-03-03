@@ -186,7 +186,7 @@ impl Plugin for FeatureToggle {
                 }
 
                 let errors = to_use.validate_query(query);
-                let errors: Vec<_> = errors.iter().filter(|e| e.is_error()).collect();
+                let errors: Vec<_> = errors.iter().filter(|e| e.data.is_error()).collect();
                 if !errors.is_empty() {
                     tracing::warn!(
                         "{}",
@@ -194,15 +194,15 @@ impl Plugin for FeatureToggle {
                             .iter()
                             .fold("".to_string(), |acc, x| format!("{acc}\n{x}"))
                     );
-                    // TODO: add all errors
-                    let res: supergraph::Response = supergraph::Response::error_builder()
-                        .error(
-                            apollo_router::graphql::Error::builder()
-                                .message(format!("{}", errors.get(0).unwrap()))
-                                .extension_code("extension_code")
-                                .build(),
-                        )
-                        .status_code(http::StatusCode::BAD_REQUEST)
+                    let mut error_builder = supergraph::Response::error_builder();
+                    for error in errors.into_iter() {
+                        let router_error = apollo_router::graphql::Error::builder()
+                            .message(error.data.to_string())
+                            .extension_code("extension_code")
+                            .build();
+                        error_builder = error_builder.error(router_error);
+                    }
+                    let res = error_builder.status_code(http::StatusCode::BAD_REQUEST)
                         .context(req.context.clone())
                         .build()
                         .expect("response is valid");
@@ -445,7 +445,7 @@ type State
         assert_no_errors(public_schema.validate_query(indoc! {r#"
             {
               reviews {
-                id2
+                id
               }
             }
         "#}));
@@ -458,8 +458,7 @@ type State
               }
             }
         "#});
-        // https://github.com/apollographql/apollo-rs/issues/392
-        //assert_ne!(errors.len(), 0);
+        assert_ne!(errors.len(), 0);
     }
 
     #[test]
@@ -473,6 +472,7 @@ type State
             type Query {
               reviews: [Review!]!
             }
+            directive @feature(name: String!) repeatable on FIELD_DEFINITION
         "#};
         let raw_supergraph_schema = RawSupergraph::new(Arc::new(sdl.to_string()));
         let public_schema = raw_supergraph_schema
@@ -489,6 +489,7 @@ type State
                 type Query {
                   reviews: [Review!]!
                 }
+                directive @feature(name: String!) repeatable on FIELD_DEFINITION
             "#}
         );
 
@@ -503,8 +504,7 @@ type State
     }
 
     #[test]
-    fn issue_with_apollo_compiler() {
-        // https://github.com/apollographql/apollo-rs/issues/392
+    fn query_validation_with_apollo_compiler() {
         let schema = indoc! {r#"
             type Review {
               id: Int!
@@ -519,7 +519,6 @@ type State
             {
               reviews {
                 id
-                key
               }
             }
         "#};
@@ -533,18 +532,28 @@ type State
             }
         "#};
 
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_type_system(schema, "schema");
+        let type_system = {
+            let mut compiler = ApolloCompiler::new();
+            compiler.add_type_system(schema, "schema");
+            compiler.db.type_system()
+        };
 
-        let id = compiler.add_executable(failing_query, "query");
-        let diagnostics = compiler.validate();
-        for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
-        }
-        assert!(!diagnostics.is_empty());
+        let validate = |sdl: &str| {
+            let mut compiler = ApolloCompiler::new();
+            compiler.add_executable(sdl, "query.graphql");
+            compiler.set_type_system_hir(type_system.clone());
+            let diagnostics = compiler.validate();
+            for diagnostic in &diagnostics {
+                println!("{}", diagnostic);
+            }
+            diagnostics
+        };
 
-        compiler.update_executable(id, query);
-        assert!(compiler.validate().is_empty());
+        let failing_query_diagnostics = validate(failing_query);
+        assert!(!failing_query_diagnostics.is_empty());
+
+        let query_diagnostics = validate(query);
+        assert_no_errors(query_diagnostics);
     }
 
     fn assert_no_errors(errors: Vec<ApolloDiagnostic>) {

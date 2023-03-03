@@ -15,7 +15,8 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.58"
-apollo-compiler = "0.6.0"
+#apollo-compiler = "0.6.0"
+apollo-compiler = { git = "https://github.com/apollographql/apollo-rs", rev = "0f67bc7789bb115091195e527c8c9c7b903e2ec9" }
 apollo-encoder = "0.5.0"
 apollo-parser = "0.5.0"
 # Note if you update these dependencies then also update xtask/Cargo.toml
