@@ -1,5 +1,5 @@
 use apollo_compiler::hir::TypeSystem;
-use apollo_compiler::{ApolloCompiler, ApolloDiagnostic, HirDatabase};
+use apollo_compiler::{ApolloCompiler, HirDatabase};
 use apollo_parser::ast::{AstNode, Definition};
 use apollo_parser::Parser;
 
@@ -14,6 +14,7 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 use std::ops::ControlFlow;
 use std::sync::Arc;
+use apollo_compiler::database::db::Upcast;
 use tower::BoxError;
 use tower::ServiceBuilder;
 use tower::ServiceExt;
@@ -102,16 +103,6 @@ struct PublicGraph {
     sdl: String,
 }
 
-impl PublicGraph {
-    fn validate_query(&self, operation: &str) -> Vec<ApolloDiagnostic> {
-        let type_system = std::sync::Arc::clone(&self.type_system);
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_executable(operation, "query.graphql");
-        compiler.set_type_system_hir(type_system);
-        compiler.validate()
-    }
-}
-
 struct FeatureToggle {
     #[allow(dead_code)]
     configuration: Conf,
@@ -162,30 +153,41 @@ impl Plugin for FeatureToggle {
                 };
                 let query = req.supergraph_request.body().query.as_ref().unwrap();
 
-                // if introspection then we must answer it ourselves
-                let result = introspect::batch_introspect(
-                    &to_use.sdl,
-                    vec![query.to_string()],
-                    QueryPlannerConfig::default(),
-                );
+                let mut compiler = ApolloCompiler::new();
+                compiler.set_type_system_hir(to_use.type_system.clone());
+                let query_id = compiler.add_executable(query, "query.graphql");
 
-                // return the result - for the moment (PoC), if the introspection result is not an error, we return it
-                let introspection_result: Option<supergraph::Response> = match result.unwrap() {
-                    Ok(mut r) => r.pop().and_then(|d| d.into_result().ok()).map(|data| {
-                        supergraph::Response::builder()
-                            .data(data)
-                            .context(req.context.clone())
-                            .build()
-                            .unwrap()
-                    }),
-                    Err(_) => None,
-                };
+                let operation_name = req.supergraph_request.body().operation_name.clone();
+                let db = compiler.db.upcast();
+                // TODO: return error if operation_name cannot be found
+                let op = db.find_operation(query_id, operation_name).unwrap();
+                if op.is_introspection(db) {
+                    // if introspection then we must answer it ourselves
+                    let result = introspect::batch_introspect(
+                        &to_use.sdl,
+                        vec![query.to_string()],
+                        QueryPlannerConfig::default(),
+                    );
 
-                if let Some(res) = introspection_result {
-                    return Ok(ControlFlow::Break(res));
+                    // return the result - for the moment (PoC), if the introspection result is not an error, we return it
+                    let introspection_result: Option<supergraph::Response> = match result.unwrap() {
+                        Ok(mut r) => r.pop().and_then(|d| d.into_result().ok()).map(|data| {
+                            supergraph::Response::builder()
+                                .data(data)
+                                .context(req.context.clone())
+                                .build()
+                                .unwrap()
+                        }),
+                        Err(_) => None,
+                    };
+
+                    // TODO: return error if introspection query could be succeed
+                    if let Some(res) = introspection_result {
+                        return Ok(ControlFlow::Break(res));
+                    }
                 }
 
-                let errors = to_use.validate_query(query);
+                let errors = compiler.validate();
                 let errors: Vec<_> = errors.iter().filter(|e| e.data.is_error()).collect();
                 if !errors.is_empty() {
                     tracing::warn!(
@@ -222,6 +224,7 @@ register_plugin!("router_test", "feature_toggle", FeatureToggle);
 
 #[cfg(test)]
 mod tests {
+    use apollo_compiler::{ApolloDiagnostic, hir};
     use super::*;
     use apollo_parser::Parser;
     use apollo_router::TestHarness;
@@ -410,7 +413,6 @@ type State
             expected_schema.to_string(),
             public_schema
                 .sdl
-                .to_string()
                 .replace("\n   @join", " @join") // hack to remove formatting differences
         );
     }
@@ -442,22 +444,22 @@ type State
             "#}
         );
 
-        assert_no_errors(public_schema.validate_query(indoc! {r#"
+        assert_no_errors(validate_query(indoc! {r#"
             {
               reviews {
                 id
               }
             }
-        "#}));
+        "#}, public_schema.type_system.clone()));
 
-        let errors = public_schema.validate_query(indoc! {r#"
+        let errors = validate_query(indoc! {r#"
             {
               reviews {
                 id
                 key
               }
             }
-        "#});
+        "#}, public_schema.type_system);
         assert_ne!(errors.len(), 0);
     }
 
@@ -493,14 +495,14 @@ type State
             "#}
         );
 
-        assert_no_errors(public_schema.validate_query(indoc! {r#"
+        assert_no_errors(validate_query(indoc! {r#"
             {
               reviews {
                 id
                 key
               }
             }
-        "#}));
+        "#}, public_schema.type_system));
     }
 
     #[test]
@@ -538,22 +540,22 @@ type State
             compiler.db.type_system()
         };
 
-        let validate = |sdl: &str| {
-            let mut compiler = ApolloCompiler::new();
-            compiler.add_executable(sdl, "query.graphql");
-            compiler.set_type_system_hir(type_system.clone());
-            let diagnostics = compiler.validate();
-            for diagnostic in &diagnostics {
-                println!("{}", diagnostic);
-            }
-            diagnostics
-        };
-
-        let failing_query_diagnostics = validate(failing_query);
+        let failing_query_diagnostics = validate_query(failing_query, type_system.clone());
         assert!(!failing_query_diagnostics.is_empty());
 
-        let query_diagnostics = validate(query);
+        let query_diagnostics = validate_query(query, type_system);
         assert_no_errors(query_diagnostics);
+    }
+
+    fn validate_query(query: &str, schema: Arc<hir::TypeSystem>) -> Vec<ApolloDiagnostic> {
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_executable(query, "query.graphql");
+        compiler.set_type_system_hir(schema);
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        diagnostics
     }
 
     fn assert_no_errors(errors: Vec<ApolloDiagnostic>) {
