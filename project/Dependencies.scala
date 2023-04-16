@@ -23,6 +23,6 @@ object Dependencies {
   val scalaTest = "org.scalatest" %% "scalatest" % "3.2.15"
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
-  val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.2"
+  val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.3"
   val fs2Process = "eu.monniot" %% "fs2-process" % "0.4.4"
 }
