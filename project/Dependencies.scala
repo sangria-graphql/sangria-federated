@@ -7,7 +7,7 @@ object Dependencies {
     val http4s = "1.0.0-M30"
   }
 
-  val sangria = "org.sangria-graphql" %% "sangria" % "4.0.0"
+  val sangria = "org.sangria-graphql" %% "sangria" % "4.0.2"
   val sangriaCirce = "org.sangria-graphql" %% "sangria-circe" % "1.3.2"
   val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.4.11"
 
@@ -20,7 +20,7 @@ object Dependencies {
   val circeParser = "io.circe" %% "circe-parser" % V.circe
   val circeOptics = "io.circe" %% "circe-optics" % V.circeOptics
 
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.16"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.17"
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
   val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.3"
