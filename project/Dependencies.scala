@@ -4,7 +4,7 @@ object Dependencies {
   object V {
     val circe = "0.15.0-M1"
     val circeOptics = "0.14.1"
-    val http4s = "1.0.0-M30"
+    val http4s = "1.0.0-M40"
   }
 
   val sangria = "org.sangria-graphql" %% "sangria" % "4.0.2"
@@ -25,4 +25,5 @@ object Dependencies {
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
   val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.3"
   val fs2Process = "eu.monniot" %% "fs2-process" % "0.4.4"
+  val nuProcess = "com.zaxxer" % "nuprocess" % "2.0.6"
 }

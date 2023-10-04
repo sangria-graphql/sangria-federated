@@ -4,6 +4,7 @@ import cats.data.NonEmptyList
 import cats.effect._
 import cats.implicits._
 import com.comcast.ip4s._
+import fs2.io.net.Network
 import io.circe.Json
 import org.http4s._
 import org.http4s.circe._
@@ -13,7 +14,7 @@ import org.http4s.headers.Location
 import org.http4s.implicits._
 import org.http4s.server.{Router, Server}
 import org.typelevel.ci.CIString
-import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.{Logger, LoggerFactory}
 import sangria.execution.Middleware
 import sangria.federation.tracing.ApolloFederationTracing
 
@@ -26,8 +27,7 @@ object Server {
     Header.Raw(name, "ftv1")
   }
 
-  def resource[F[_]: Async, Ctx](
-      logger: Logger[F],
+  def resource[F[_]: Async: Network: LoggerFactory, Ctx](
       graphQL: GraphQL[F, Ctx],
       port: Port
   ): Resource[F, Server] = {
@@ -59,7 +59,6 @@ object Server {
       .withHost(host"localhost")
       .withPort(port)
       .withHttpApp(Router("/" -> routes).orNotFound)
-      .withLogger(logger)
       .build
   }
 }

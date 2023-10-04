@@ -96,7 +96,10 @@ lazy val exampleCommon = exampleProject("example-common")
 lazy val exampleTest = exampleProject("example-test")
   .dependsOn(exampleReview, exampleState)
   .settings(
-    libraryDependencies ++= Seq(Dependencies.weaver, Dependencies.fs2Process).map(_ % Test),
+    libraryDependencies ++= Seq(
+      Dependencies.weaver,
+      Dependencies.fs2Process,
+      Dependencies.nuProcess).map(_ % Test),
     testFrameworks += new TestFramework("weaver.framework.CatsEffect")
   )
 
@@ -113,7 +116,7 @@ def newProject(name: String) =
 
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq("-deprecation", "-feature"),
-  scalacOptions += "-target:jvm-1.8",
+  scalacOptions ++= Seq("-release", "8"),
   javacOptions ++= Seq("-source", "8", "-target", "8")
 )
 

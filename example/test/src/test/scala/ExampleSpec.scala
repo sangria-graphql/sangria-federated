@@ -1,34 +1,43 @@
 import cats.effect.{Deferred, IO, Resource}
 import eu.monniot.process.Process
-import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jFactory
+import org.typelevel.log4cats.{Logger, LoggerFactory, SelfAwareStructuredLogger}
 import weaver._
 
 import scala.concurrent.duration._
 
 object ExampleSpec extends SimpleIOSuite {
 
-  private def resources(log: Log[IO]): Resource[IO, Process[IO]] = {
+  private def resources(log: Log[IO]): Resource[IO, Unit] = {
     val l = logger(log)
+    // TODO: use log
+    implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
     for {
-      _ <- state.Main.run(l).background
-      _ <- review.Main.run(l).background
-      router <- routerResource(log)
-    } yield router._1
+      _ <- state.Main.run().background
+      _ <- review.Main.run().background
+    } yield ()
   }
 
-  private def routerResource(log: Log[IO]): Resource[IO, (Process[IO], Int)] = Process
+  private def routerResource(log: Log[IO]): Resource[IO, Process[IO]] = Process
     .spawn[IO]("bash", "-c", "./example/router/start.sh")
     .flatMap { p =>
-      Resource.make(p.pid.map(pid => (p, pid))) { case (_, pid) =>
-        for {
-          _ <- log.info("killing router process (child of 'start' bash script)")
-          _ <- IO.blocking(sys.process.Process("killall" :: "router" :: Nil).!)
-        } yield ()
-      }
+      Resource.make(IO(p))(_ => killRouter(log))
     }
 
+  private def killRouter(log: Log[IO]): IO[Unit] = for {
+    _ <- log.info("killing router process (child of 'start' bash script)")
+    _ <- IO
+      .blocking(sys.process.Process("killall" :: "router" :: Nil).!)
+      .onError(e => log.warn("failed to kill router process", cause = e))
+  } yield ()
+
   test("examples can be federated") { (_, log) =>
-    resources(log).use { router =>
+    val allResources = for {
+      _ <- resources(log)
+      router <- routerResource(log)
+    } yield router
+
+    allResources.use { router =>
       for {
         graphqlEndpointExposed <- Deferred[IO, Boolean]
         _ <- router.stdout
