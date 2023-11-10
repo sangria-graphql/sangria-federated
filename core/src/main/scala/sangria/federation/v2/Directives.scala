@@ -89,7 +89,8 @@ object Directives {
     */
   val ShareableDefinition: Directive = Directive(
     name = "shareable",
-    locations = Set(DirectiveLocation.Object, DirectiveLocation.FieldDefinition)
+    locations = Set(DirectiveLocation.Object, DirectiveLocation.FieldDefinition),
+    repeatable = true
   )
 
   /** [@shareable](https://www.apollographql.com/docs/federation/federated-types/federated-directives#shareable)

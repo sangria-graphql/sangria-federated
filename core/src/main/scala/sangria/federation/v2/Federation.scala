@@ -95,7 +95,7 @@ object Federation {
         federationDirectives
 
     val federationV2Link = Directives.Link(
-      url = "https://specs.apollo.dev/federation/v2.1",
+      url = "https://specs.apollo.dev/federation/v2.2",
       `import` = Some(importedDirectives.map(d => Link__Import("@" + d.name)).toVector)
     )
 
