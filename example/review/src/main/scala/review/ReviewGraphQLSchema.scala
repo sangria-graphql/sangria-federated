@@ -35,7 +35,8 @@ object ReviewGraphQLSchema {
       ctx.review.getReviews(ids)(ctx.ec)
   }
 
-  private val ids = Argument("ids", ListInputType(IntType))
+  private val ids: Argument[Seq[Int]] =
+    Argument("ids", ListInputType(IntType)).asInstanceOf[Argument[Seq[Int]]]
   val Query: ObjectType[ReviewContext, Any] = ObjectType(
     "Query",
     fields[ReviewContext, Any](

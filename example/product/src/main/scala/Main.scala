@@ -1,5 +1,5 @@
 import cats.effect.{ExitCode, IO, IOApp}
-import com.comcast.ip4s.IpLiteralSyntax
+import com.comcast.ip4s._
 import graphql.{
   AppContext,
   CustomDirectiveSpec,

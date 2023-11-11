@@ -1,9 +1,10 @@
 package sangria.federation.v1
 
 import sangria.ast
-import sangria.marshalling.InputUnmarshaller
+import sangria.marshalling.{FromInput, InputUnmarshaller}
 import sangria.renderer.SchemaFilter
 import sangria.schema._
+import sangria.util.tag.@@
 
 object Federation {
   import Query._
@@ -43,8 +44,8 @@ object Federation {
               "Query" -> Map(
                 "_service" -> (_ => _Service(sdl)),
                 "_entities" -> (ctx =>
-                  ctx.withArgs(representationsArg) { anys =>
-                    Action.sequence(anys.map { any =>
+                  ctx.withArgs(representationsArg) { (anys: Seq[_Any[Node]]) =>
+                    Action.sequence(anys.map { (any: _Any[Node]) =>
                       val typeName = any.__typename
                       val resolver = resolversMap.getOrElse(
                         typeName,
