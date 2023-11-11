@@ -34,7 +34,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema @link(url: "https://specs.apollo.dev/federation/v2.1", import: ["@key", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag"]) {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@interfaceObject", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag"]) {
               query: Query
             }
 
@@ -61,6 +61,8 @@ class FederationSpec extends AsyncFreeSpec {
               sdl: String
             }
 
+            directive @interfaceObject on OBJECT
+
             directive @extends on INTERFACE | OBJECT
 
             directive @external on FIELD_DEFINITION
@@ -73,7 +75,7 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
 
-            directive @shareable on OBJECT | FIELD_DEFINITION
+            directive @shareable repeatable on OBJECT | FIELD_DEFINITION
 
             directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
 
@@ -110,7 +112,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema @link(url: "https://specs.apollo.dev/federation/v2.1", import: ["@key", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag"]) {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@interfaceObject", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag"]) {
               query: Query
             }
 
@@ -145,6 +147,8 @@ class FederationSpec extends AsyncFreeSpec {
               sdl: String
             }
 
+            directive @interfaceObject on OBJECT
+
             directive @extends on INTERFACE | OBJECT
 
             directive @external on FIELD_DEFINITION
@@ -157,7 +161,7 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
 
-            directive @shareable on OBJECT | FIELD_DEFINITION
+            directive @shareable repeatable on OBJECT | FIELD_DEFINITION
 
             directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
 
@@ -203,7 +207,7 @@ class FederationSpec extends AsyncFreeSpec {
             .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.1\", import: [\"@key\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\ntype Query {\n  field: Int\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.3\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\ntype Query {\n  field: Int\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
@@ -233,7 +237,7 @@ class FederationSpec extends AsyncFreeSpec {
             .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.1\", import: [\"@key\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\ntype Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.3\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\ntype Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
@@ -260,7 +264,7 @@ class FederationSpec extends AsyncFreeSpec {
           .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.1\", import: [\"@key\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\n\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.3\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\n\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
