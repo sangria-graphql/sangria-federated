@@ -45,6 +45,11 @@ class DirectivesSpec extends AnyWordSpec {
         renderLike("""@key(fields: "id", resolvable: false)""")
     }
 
+    "support @interfaceObject directive" in {
+      // https://www.apollographql.com/docs/federation/federated-types/federated-directives#interfaceobject
+      Directives.InterfaceObject must renderLike("@interfaceObject")
+    }
+
     "support @extends directive" in {
       // https://www.apollographql.com/docs/federation/federated-types/federated-directives#extends
       Directives.Extends must renderLike("@extends")

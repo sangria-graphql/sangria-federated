@@ -8,7 +8,7 @@ import sangria.schema.SchemaChange.AbstractChange
 
 package object federation {
 
-  val spec: String = "https://specs.apollo.dev/federation/v2.2"
+  val spec: String = "https://specs.apollo.dev/federation/v2.3"
 
   def beCompatibleWith(expectedSchema: Schema[_, _]): Matcher[Schema[_, _]] =
     Matcher { schema: Schema[_, _] =>
