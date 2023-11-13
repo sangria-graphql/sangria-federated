@@ -78,7 +78,7 @@ object Directives {
   val InterfaceObjectDefinition: Directive =
     Directive(name = "interfaceObject", locations = Set(DirectiveLocation.Object))
 
-  /** [@extends](https://www.apollographql.com/docs/federation/federated-types/federated-directives#interfaceobject)
+  /** [@interfaceObject](https://www.apollographql.com/docs/federation/federated-types/federated-directives#interfaceobject)
     * directive
     */
   val InterfaceObject: ast.Directive = ast.Directive(name = "interfaceObject")
