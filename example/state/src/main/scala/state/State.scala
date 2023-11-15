@@ -13,11 +13,14 @@ object StateGraphQLSchema {
 
   implicit val decoder: Decoder[Json, StateArg] = deriveDecoder[StateArg].decodeJson(_)
 
-  val stateResolver = EntityResolver[StateService, Json, State, StateArg](
-    __typeName = "State",
-    (arg, ctx) => ctx.ctx.getState(arg.id))
+  val stateResolver: EntityResolver[StateService, Json] =
+    EntityResolver[StateService, Json, State, StateArg](
+      __typeName = "State",
+      (ids, ctx) => ctx.ctx.getStates(ids.map(_.id)),
+      s => StateArg(s.id)
+    )
 
-  val schema =
+  val schema: ObjectType[Unit, State] =
     ObjectType(
       "State",
       fields[Unit, State](

@@ -2,10 +2,12 @@ package sangria.federation.v2
 
 import sangria.ast
 import sangria.federation.v2.Directives.{ComposeDirective, Link}
-import sangria.marshalling.InputUnmarshaller
+import sangria.marshalling.{FromInput, InputUnmarshaller}
 import sangria.renderer.SchemaFilter
 import sangria.schema._
 import sangria.util.tag.@@
+
+import scala.collection.mutable
 
 case class Spec(url: String) extends AnyVal
 
@@ -129,14 +131,34 @@ object Federation {
                 "_service" -> (_ => _Service(sdl)),
                 "_entities" -> (ctx =>
                   ctx.withArgs(representationsArg) { anys =>
-                    Action.sequence(anys.map { any =>
-                      val resolver = resolversMap(any.__typename)
+                    val anysWithArgs: Seq[ResolvedAny[Ctx, Node]] =
+                      anys.map(any => ResolvedAny(any, resolversMap(any.__typename)))
 
-                      any.fields.decode[resolver.Arg](resolver.decoder) match {
-                        case Right(value) => resolver.resolve(value, ctx)
-                        case Left(_) => LeafAction(None)
+                    val requestsByTypename = anysWithArgs.groupBy(_.any.__typename)
+                    val resolvedBuilder = mutable.Map[ResolvedKey, LeafAction[Ctx, Any]]()
+                    requestsByTypename.foreach { case (typename, elements) =>
+                      // the resolver is the same for all elements as it's per type
+                      val resolver = elements.head.resolver
+                      val bulkArgs = elements.map(_.arg)
+
+                      if (bulkArgs.nonEmpty) {
+                        resolver.resolve(
+                          bulkArgs.asInstanceOf[Seq[resolver.Arg]],
+                          ctx.asInstanceOf[Context[Ctx, resolver.Val]]) match {
+                          case Value(results) =>
+                            results.foreach { result =>
+                              val arg = resolver.arg(result)
+                              resolvedBuilder(ResolvedKey(typename, arg)) = LeafAction(result)
+                            }
+                          case e => throw new Exception("expecting Value and got " + e)
+                        }
                       }
-                    })
+                    }
+
+                    val resolved = resolvedBuilder.withDefault(_ => LeafAction(None))
+                    val results =
+                      anysWithArgs.map(a => resolved(ResolvedKey(a.any.__typename, a.arg)))
+                    Action.sequence(results)
                   })
               )
             ),
@@ -151,6 +173,16 @@ object Federation {
         )
     }).copy(directives =
       Directives.Link.definition :: federationDirectives ::: extendedSchema.directives)
+  }
+
+  private case class ResolvedKey(typename: String, arg: Any)
+  private case class ResolvedAny[Ctx, Node](
+      any: @@[_Any[Node], FromInput.CoercedScalaResult],
+      resolver: EntityResolver[Ctx, Node]) {
+    val arg: resolver.Arg = any.fields.decode[resolver.Arg](resolver.decoder) match {
+      case Right(arg) => arg
+      case Left(e) => throw e
+    }
   }
 
   def upgrade[Node](default: InputUnmarshaller[Node]): InputUnmarshaller[Node] =

@@ -1,9 +1,12 @@
 package state
 
+import scala.concurrent.Future
+
 trait StateService {
 
-  def getStates: List[State]
-  def getState(id: Int): Option[State]
+  def getAllStates: Future[List[State]]
+  def getStates(ids: Seq[Int]): Future[List[State]]
+  def getState(id: Int): Future[Option[State]]
 }
 
 object StateService {
@@ -16,9 +19,12 @@ object StateService {
       value = "initial"
     ) :: Nil
 
-    def getStates: List[State] = states
+    override def getAllStates: Future[List[State]] = Future.successful(states)
 
-    def getState(id: Int): Option[State] =
-      states.find(_.id == id)
+    def getStates(ids: Seq[Int]): Future[List[State]] =
+      Future.successful(states.filter(s => ids.contains(s.id)))
+
+    def getState(id: Int): Future[Option[State]] =
+      Future.successful(states.find(_.id == id))
   }
 }
