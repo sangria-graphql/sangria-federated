@@ -45,7 +45,7 @@ lazy val root = (project in file("."))
     description := "Federation for Sangria"
   )
   .settings(noPublishSettings)
-  .aggregate(core, exampleCommon, exampleReview, exampleState, exampleTest)
+  .aggregate(core, exampleCommon, exampleReview, exampleState, exampleProduct, exampleTest)
 
 lazy val core = libraryProject("core")
   .settings(
@@ -73,6 +73,18 @@ lazy val exampleReview = exampleProject("example-review")
 lazy val exampleState = exampleProject("example-state")
   .dependsOn(exampleCommon)
   .settings(libraryDependencies ++= serviceDependencies)
+
+lazy val exampleProduct = exampleProject("example-product")
+  .dependsOn(core)
+  .settings(libraryDependencies ++= Seq(
+    Dependencies.sangriaCirce,
+    Dependencies.http4sEmberServer,
+    Dependencies.http4sCirce,
+    Dependencies.http4sDsl,
+    Dependencies.circeOptics,
+    Dependencies.circeGeneric,
+    Dependencies.circeCore
+  ))
 
 lazy val serviceDependencies = Seq(
   Dependencies.logbackClassic,
