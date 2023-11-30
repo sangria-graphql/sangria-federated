@@ -7,6 +7,7 @@ import io.circe.parser._
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers._
 import sangria.ast.Document
+import sangria.execution.deferred.{Deferred, DeferredResolver, UnsupportedDeferError}
 import sangria.execution.{Executor, VariableCoercionError}
 import sangria.federation._
 import sangria.federation.v2.Directives.Key
@@ -14,6 +15,8 @@ import sangria.macros.LiteralGraphQLStringContext
 import sangria.parser.QueryParser
 import sangria.renderer.{QueryRenderer, SchemaRenderer}
 import sangria.schema._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class FederationSpec extends AsyncFreeSpec {
 
@@ -355,7 +358,11 @@ class FederationSpec extends AsyncFreeSpec {
         """).getOrElse(Json.Null)
 
         Executor
-          .execute(FederationSpec.Schema.schema, query, variables = args)
+          .execute(
+            FederationSpec.Schema.schema,
+            query,
+            variables = args,
+            deferredResolver = FederationSpec.Schema.deferredReviewResolver)
           .map(QueryRenderer.renderPretty(_) should be("""{
               |  data: {
               |    _entities: [{
@@ -401,6 +408,20 @@ object FederationSpec {
       (arg, _) => Some(State(arg.id, s"mock state ${arg.id}")))
 
     private case class Review(id: Int, value: String)
+    private case class DeferredReview(id: Int) extends Deferred[Option[Review]]
+    private case class DeferredReviewSeq(ids: Seq[Int]) extends Deferred[Seq[Review]]
+    case class DeferredReviewResolver() extends DeferredResolver[Any] {
+      override def resolve(deferred: Vector[Deferred[Any]], context: Any, queryState: Any)(implicit
+          ec: ExecutionContext): Vector[Future[Any]] =
+        deferred.map {
+          case deferredReview: DeferredReview =>
+            Future.successful(Review(deferredReview.id, s"mock review ${deferredReview.id}"))
+          case deferredReviews: DeferredReviewSeq =>
+            Future.successful(deferredReviews.ids.map(id => Review(id, s"mock review $id")))
+          case d => Future.failed(UnsupportedDeferError(d))
+        }
+    }
+    val deferredReviewResolver: DeferredReviewResolver = DeferredReviewResolver()
     private case class ReviewArg(id: Int)
     private val ReviewType = ObjectType(
       "Review",
@@ -411,7 +432,8 @@ object FederationSpec {
       deriveDecoder[ReviewArg].decodeJson(_)
     private val reviewResolver = EntityResolver[Any, Json, Review, ReviewArg](
       __typeName = "Review",
-      (arg, _) => Some(Review(arg.id, s"mock review ${arg.id}")))
+      (arg, _) => DeferredValue(DeferredReview(arg.id))
+    )
 
     private val Query = ObjectType(
       "Query",
