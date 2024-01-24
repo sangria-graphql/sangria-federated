@@ -16,6 +16,7 @@ object Dependencies {
   val http4sCirce = "org.http4s" %% "http4s-circe" % V.http4s
   val http4sDsl = "org.http4s" %% "http4s-dsl" % V.http4s
 
+  val circeCore = "io.circe" %% "circe-core" % V.circe
   val circeGeneric = "io.circe" %% "circe-generic" % V.circe
   val circeParser = "io.circe" %% "circe-parser" % V.circe
   val circeOptics = "io.circe" %% "circe-optics" % V.circeOptics
