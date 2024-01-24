@@ -1,0 +1,7 @@
+services:
+  products:
+    build:
+      context: .
+      dockerfile: ./example/product/Dockerfile
+    ports:
+      - 4001:4001
