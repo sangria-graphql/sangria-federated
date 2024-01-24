@@ -10,5 +10,5 @@ object StateAPI {
       Field(
         name = "states",
         fieldType = ListType(StateGraphQLSchema.schema),
-        resolve = _.ctx.getStates)))
+        resolve = _.ctx.getAllStates)))
 }
