@@ -21,7 +21,7 @@ object Dependencies {
   val circeParser = "io.circe" %% "circe-parser" % V.circe
   val circeOptics = "io.circe" %% "circe-optics" % V.circeOptics
 
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.17"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.18"
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
   val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.4"
