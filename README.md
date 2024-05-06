@@ -43,6 +43,8 @@ The state service defines the state entity annotated with `@key("id")`.
 
 For each entity, we need to define an [entity resolver](https://www.apollographql.com/docs/federation/entities/#resolving).
 
+It's highly recommended to use [Deferred Value Resolution](https://sangria-graphql.github.io/learn/#deferred-value-resolution) in those resolvers to batch the fetching of the entities.
+
 [Implementation of the State GraphQL API](./example/state/src/main/scala/state/StateGraphQLSchema.scala).
 
 The entity resolver implements:
