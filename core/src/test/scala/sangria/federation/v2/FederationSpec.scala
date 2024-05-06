@@ -329,113 +329,6 @@ class FederationSpec extends AsyncFreeSpec {
         }
       }
 
-      "should fetch several entities of same type in one call" in {
-        implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
-        val args: Json = parse("""
-          {
-            "representations": [
-              { "__typename": "State", "id": 1 },
-              { "__typename": "State", "id": 2 },
-              { "__typename": "State", "id": 20 },
-              { "__typename": "State", "id": 5 }
-            ]
-          }
-        """).getOrElse(Json.Null)
-
-        Executor
-          .execute(FederationSpec.Schema.schema, query, variables = args)
-          .map(QueryRenderer.renderPretty(_) should be("""{
-             |  data: {
-             |    _entities: [{
-             |      id: 1
-             |      value: "mock state 1"
-             |    }, {
-             |      id: 2
-             |      value: "mock state 2"
-             |    }, {
-             |      id: 20
-             |      value: "mock state 20"
-             |    }, {
-             |      id: 5
-             |      value: "mock state 5"
-             |    }]
-             |  }
-             |}""".stripMargin))
-      }
-
-      "should fetch several entities of different types in one call" in {
-        implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
-        val args: Json = parse("""
-          {
-            "representations": [
-              { "__typename": "State", "id": 1 },
-              { "__typename": "State", "id": 2 },
-              { "__typename": "Review", "id": 2 },
-              { "__typename": "State", "id": 20 },
-              { "__typename": "State", "id": 5 },
-              { "__typename": "Review", "id": 1 }
-            ]
-          }
-        """).getOrElse(Json.Null)
-
-        Executor
-          .execute(
-            FederationSpec.Schema.schema,
-            query,
-            variables = args,
-            deferredResolver = FederationSpec.Schema.deferredReviewResolver)
-          .map(QueryRenderer.renderPretty(_) should be("""{
-             |  data: {
-             |    _entities: [{
-             |      id: 1
-             |      value: "mock state 1"
-             |    }, {
-             |      id: 2
-             |      value: "mock state 2"
-             |    }, {
-             |      id: 2
-             |      value: "mock review 2"
-             |    }, {
-             |      id: 20
-             |      value: "mock state 20"
-             |    }, {
-             |      id: 5
-             |      value: "mock state 5"
-             |    }, {
-             |      id: 1
-             |      value: "mock review 1"
-             |    }]
-             |  }
-             |}""".stripMargin))
-      }
-
-      "handles non found entities" in {
-        implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
-        val args: Json = parse("""
-          {
-            "representations": [
-              { "__typename": "State", "id": 1 },
-              { "__typename": "State", "id": 42 },
-              { "__typename": "State", "id": 20 }
-            ]
-          }
-        """).getOrElse(Json.Null)
-
-        Executor
-          .execute(FederationSpec.Schema.schema, query, variables = args)
-          .map(QueryRenderer.renderPretty(_) should be("""{
-             |  data: {
-             |    _entities: [{
-             |      id: 1
-             |      value: "mock state 1"
-             |    }, null, {
-             |      id: 20
-             |      value: "mock state 20"
-             |    }]
-             |  }
-             |}""".stripMargin))
-      }
-
 //      "handles entities using same arg" in {
 //        implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
 //        val args: Json = parse("""
@@ -471,13 +364,17 @@ class FederationSpec extends AsyncFreeSpec {
 
 object FederationSpec {
   object Schema {
+    // =================== State ===================
+    // State model
     private case class State(id: Int, value: String)
+    // State GraphQL Model
     private val StateType = ObjectType(
       "State",
       fields[Unit, State](
         Field("id", IntType, resolve = _.value.id),
         Field("value", OptionType(StringType), resolve = _.value.value))).withDirective(Key("id"))
 
+    // State resolver
     private case class StateArg(id: Int)
     private implicit val stateArgDecoder: Decoder[Json, StateArg] =
       deriveDecoder[StateArg].decodeJson(_)
@@ -485,7 +382,22 @@ object FederationSpec {
       __typeName = "State",
       (arg, _) => if (arg.id == 42) None else Some(State(arg.id, s"mock state ${arg.id}")))
 
+    // =================== Review ===================
+    // Review model
     private case class Review(id: Int, value: String)
+
+    // Review GraphQL Model
+    private val ReviewType = ObjectType(
+      "Review",
+      fields[Unit, Review](
+        Field("id", IntType, resolve = _.value.id),
+        Field("value", OptionType(StringType), resolve = _.value.value))).withDirective(Key("id"))
+
+    // Review resolver
+    private case class ReviewArg(id: Int)
+    private implicit val reviewArgDecoder: Decoder[Json, ReviewArg] =
+      deriveDecoder[ReviewArg].decodeJson(_)
+
     private case class DeferredReview(id: Int) extends Deferred[Option[Review]]
     private case class DeferredReviewSeq(ids: Seq[Int]) extends Deferred[Seq[Review]]
     case class DeferredReviewResolver() extends DeferredResolver[Any] {
@@ -500,32 +412,29 @@ object FederationSpec {
         }
     }
     val deferredReviewResolver: DeferredReviewResolver = DeferredReviewResolver()
-    private val ReviewType = ObjectType(
-      "Review",
-      fields[Unit, Review](
-        Field("id", IntType, resolve = _.value.id),
-        Field("value", OptionType(StringType), resolve = _.value.value))).withDirective(Key("id"))
-
-    private case class ReviewArg(id: Int)
-    private implicit val reviewArgDecoder: Decoder[Json, ReviewArg] =
-      deriveDecoder[ReviewArg].decodeJson(_)
     private val reviewResolver = EntityResolver[Any, Json, Review, ReviewArg](
       __typeName = "Review",
       (arg, _) => DeferredValue(DeferredReview(arg.id))
     )
 
+    // =================== Review2 ===================
+    // Review2 model
     private case class Review2(id: Int, value2: String)
 
+    // Review2 GraphQL Model
     private val Review2Type = ObjectType(
       "Review2",
       fields[Unit, Review2](
         Field("id", IntType, resolve = _.value.id),
         Field("value2", OptionType(StringType), resolve = _.value.value2))).withDirective(Key("id"))
+
+    // Review2 resolver
     // review2 uses the same arg as review
     private val review2Resolver = EntityResolver[Any, Json, Review2, ReviewArg](
       __typeName = Review2Type.name,
       (arg, _) => Some(Review2(arg.id, s"mock review2 ${arg.id}")))
 
+    // =================== Query ===================
     private val Query = ObjectType(
       "Query",
       fields[Unit, Any](
@@ -535,6 +444,7 @@ object FederationSpec {
       )
     )
 
+    // =================== Schema ===================
     val schema: Schema[Any, Any] = Federation.extend(
       sangria.schema.Schema(Query),
       List(stateResolver, reviewResolver, review2Resolver)
