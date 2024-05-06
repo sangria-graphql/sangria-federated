@@ -1,24 +1,22 @@
 package state
 
+import scala.concurrent.{ExecutionContext, Future}
+
 trait StateService {
 
-  def getStates: List[State]
-  def getState(id: Int): Option[State]
+  def getStates(ids: Seq[Int])(implicit ec: ExecutionContext): Future[Seq[State]]
 }
 
 object StateService {
 
   val inMemory: StateService = new StateService {
+    def stateFor(id: Int): State = State(
+      id = id,
+      key = s"key$id",
+      value = s"value$id"
+    )
 
-    val states = State(
-      id = 0,
-      key = "key0",
-      value = "initial"
-    ) :: Nil
-
-    def getStates: List[State] = states
-
-    def getState(id: Int): Option[State] =
-      states.find(_.id == id)
+    override def getStates(ids: Seq[Int])(implicit ec: ExecutionContext): Future[Seq[State]] =
+      Future(ids.map(stateFor))
   }
 }

@@ -6,6 +6,7 @@ import io.circe._
 import io.circe.optics.JsonPath._
 import sangria.ast
 import sangria.execution._
+import sangria.execution.deferred.DeferredResolver
 import sangria.marshalling.InputUnmarshaller
 import sangria.marshalling.circe.CirceResultMarshaller
 import sangria.parser.{QueryParser, SyntaxError}
@@ -34,6 +35,7 @@ object GraphQL {
 
   def apply[F[_], Ctx](
       schema: Schema[Ctx, Any],
+      deferredResolver: DeferredResolver[Ctx],
       userContext: F[Ctx]
   )(implicit F: Async[F], um: InputUnmarshaller[Json]): GraphQL[F, Ctx] =
     new GraphQL[F, Ctx] {
@@ -60,7 +62,8 @@ object GraphQL {
                 userContext = ctx,
                 variables = variables,
                 operationName = operationName,
-                middleware = middleware
+                middleware = middleware,
+                deferredResolver = deferredResolver
               )
           }))
           result <- execution match {

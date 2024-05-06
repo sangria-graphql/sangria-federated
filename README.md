@@ -43,13 +43,11 @@ The state service defines the state entity annotated with `@key("id")`.
 
 For each entity, we need to define an [entity resolver](https://www.apollographql.com/docs/federation/entities/#resolving).
 
-[Implementation of State](./example/state/src/main/scala/state/State.scala).
+[Implementation of the State GraphQL API](./example/state/src/main/scala/state/StateGraphQLSchema.scala).
 
 The entity resolver implements:
 - the deserialization of the fields in `_Any` object to the EntityArg.
 - how to fetch the proper Entity (in our case `State`) based on the EntityArg.
-
-The [GraphQL query type defines a simple query](./example/state/src/main/scala/state/StateAPI.scala).
 
 In the definition of the GraphQL server, we federate the Query type and the unmarshaller while supplying the entity resolvers.
 Then, we use both the federated schema and unmarshaller as arguments for the server:
@@ -65,6 +63,9 @@ def graphQL[F[_]: Async]: GraphQL[F, StateService] = {
 }
 ```
 
+The `stateResolver` delegates the resolution of the state entities to a [`Fetcher`](https://sangria-graphql.github.io/learn/#high-level-fetch-api),
+allowing the state service to resolve the state entities based on the provided ids in one batch. 
+
 The GraphQL server uses the provided schema and unmarshaller as arguments for the sangria executor:
 [implementation](./example/common/src/main/scala/common/GraphQL.scala)
   
@@ -72,7 +73,7 @@ The GraphQL server uses the provided schema and unmarshaller as arguments for th
 
 - The review service defines the `Review` type, which has a reference to the `State` type.
 
-  [implementation of Review](./example/review/src/main/scala/review/Review.scala)
+  [implementation of Review GraphQL API](./example/review/src/main/scala/review/ReviewGraphQLSchema.scala)
 
 - As `State` is implemented by the state service, we don't need to implement the whole state in the review service.
 Instead, for each entity implemented by another service, a [stub type](https://www.apollographql.com/docs/federation/entities/#referencing) should be created (containing just the minimal information that will allow to reference the entity).
