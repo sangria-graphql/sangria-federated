@@ -87,8 +87,6 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
           """)
-          .extend(Document(
-            Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
 
         withClue(SchemaRenderer.renderSchema(schema)) {
           schema should beCompatibleWith(expectedSubGraphSchema)
@@ -184,8 +182,6 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @tag(name: String!) repeatable on FIELD_DEFINITION | INTERFACE | OBJECT | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
           """)
-          .extend(Document(
-            Vector(_FieldSet.Type.toAst, Link__Import.Type.toAst, Link__Purpose.Type.toAst)))
 
         schema should beCompatibleWith(expectedSubGraphSchema)
       }
