@@ -1,28 +1,22 @@
 package review
 
+import scala.concurrent.{ExecutionContext, Future}
+
 trait ReviewService {
 
-  def getReviews: List[Review]
-  def getReview(id: Int): Option[Review]
+  def getReviews(ids: Seq[Int])(implicit ec: ExecutionContext): Future[Seq[Review]]
 }
 
 object ReviewService {
 
   val inMemory: ReviewService = new ReviewService {
-
-    val reviews = Review(
-      id = 0,
-      key = Some("review 0"),
+    def reviewFor(id: Int): Review = Review(
+      id = id,
+      key = Some(s"key$id"),
       State(id = 0)
-    ) :: Review(
-      id = 1,
-      key = Some("review 1"),
-      State(id = 0)
-    ) :: Nil
+    )
 
-    def getReviews: List[Review] = reviews
-
-    def getReview(id: Int): Option[Review] =
-      reviews.find(_.id == id)
+    override def getReviews(ids: Seq[Int])(implicit ec: ExecutionContext): Future[Seq[Review]] =
+      Future(ids.map(reviewFor))
   }
 }
