@@ -141,6 +141,69 @@ class ResolverSpec extends AnyWordSpec with Matchers {
       testApp.testApp.db.stateDbCalled.get() should be(1)
       testApp.testApp.db.reviewDbCalled.get() should be(0)
     }
+
+    "handles entities using same arg" in {
+      val testApp = new TestApp()
+
+      val states = Fetcher { (ctx: TestApp.Context, ids: Seq[Int]) =>
+        ctx.db.statesByIds(ids)
+      }
+
+      case class IntArg(id: Int)
+      implicit val intArgDecoder: Decoder[Json, IntArg] =
+        deriveDecoder[IntArg].decodeJson(_)
+      val stateResolver = EntityResolver[TestApp.Context, Json, TestApp.State, IntArg](
+        __typeName = TestApp.StateType.name,
+        (arg, _) => states.deferOpt(arg.id)
+      )
+
+      val reviews = Fetcher { (ctx: TestApp.Context, ids: Seq[Int]) =>
+        ctx.db.reviewsByIds(ids)
+      }
+
+      val reviewResolver = EntityResolver[TestApp.Context, Json, TestApp.Review, IntArg](
+        __typeName = TestApp.ReviewType.name,
+        (arg, _) => reviews.deferOpt(arg.id)
+      )
+
+      val schema: Schema[TestApp.Context, Any] =
+        Federation.extend(TestApp.schema, List(stateResolver, reviewResolver))
+
+      implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
+      val variables: Json = parse("""
+        {
+          "representations": [
+            { "__typename": "Review", "id": 1 },
+            { "__typename": "State", "id": 1 },
+            { "__typename": "State", "id": 2 }
+          ]
+        }
+      """).getOrElse(Json.Null)
+
+      import ExecutionContext.Implicits.global
+      val result = await(
+        Executor.execute(
+          schema,
+          fetchStateAndReview,
+          userContext = testApp.ctx,
+          variables = variables,
+          deferredResolver = DeferredResolver.fetchers(states, reviews)))
+
+      QueryRenderer.renderPretty(result) should be("""{
+         |  data: {
+         |    _entities: [{
+         |      id: 1
+         |      value: "mock review 1"
+         |    }, {
+         |      id: 1
+         |      value: "mock state 1"
+         |    }, {
+         |      id: 2
+         |      value: "mock state 2"
+         |    }]
+         |  }
+         |}""".stripMargin)
+    }
   }
 }
 
