@@ -62,7 +62,6 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
           """)
-          .extend(Document(Vector(_FieldSet.Type.toAst)))
 
         schema should beCompatibleWith(expectedSubGraphSchema)
       }
@@ -134,7 +133,6 @@ class FederationSpec extends AsyncFreeSpec {
 
             directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
           """)
-          .extend(Document(Vector(_FieldSet.Type.toAst)))
 
         schema should beCompatibleWith(expectedSubGraphSchema)
       }
