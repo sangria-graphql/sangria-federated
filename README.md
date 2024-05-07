@@ -61,7 +61,7 @@ def graphQL[F[_]: Async]: GraphQL[F, StateService] = {
     sangria.marshalling.circe.CirceInputUnmarshaller,
     stateResolver)
 
-  GraphQL(schema, env.pure[F])(Async[F], um)
+  GraphQL(schema, DeferredResolver.fetchers(StateGraphQLSchema.states), ctx.pure[F])(Async[F], um)
 }
 ```
 
@@ -104,6 +104,7 @@ subgraphs:
 ## Caution 🚨🚨
 
 - **This is a technology preview. We are actively working on it and cannot promise a stable API yet**.
+- It's highly recommended to use [Deferred Value Resolution](https://sangria-graphql.github.io/learn/#deferred-value-resolution) in those resolvers to batch the fetching of the entities.
 - The library upgrades the marshaller to map values scalars (e.g. json objects as scalars). This can lead to security issues as discussed [here](http://www.petecorey.com/blog/2017/06/12/graphql-nosql-injection-through-json-types/).
 
 ## Contribute
