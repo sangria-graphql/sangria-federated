@@ -5,4 +5,4 @@ addSbtPlugin("io.spray" % "sbt-revolver" % "0.10.0")
 
 // https://github.com/scalapb/ScalaPB
 addSbtPlugin("com.thesamet" % "sbt-protoc" % "1.0.7")
-libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.11.15"
+libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.11.17"
