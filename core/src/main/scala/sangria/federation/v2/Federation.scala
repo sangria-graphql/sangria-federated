@@ -130,7 +130,10 @@ object Federation {
                 "_entities" -> (ctx =>
                   ctx.withArgs(representationsArg) { anys =>
                     Action.sequence(anys.map { any =>
-                      val resolver = resolversMap(any.__typename)
+                      val typeName = any.__typename
+                      val resolver = resolversMap.getOrElse(
+                        typeName,
+                        throw new Exception(s"no resolver found for type '$typeName'"))
 
                       any.fields.decode[resolver.Arg](resolver.decoder) match {
                         case Right(value) => resolver.resolve(value, ctx)
