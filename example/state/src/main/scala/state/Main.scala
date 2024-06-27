@@ -8,7 +8,7 @@ import io.circe.Json
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import sangria.execution.deferred.DeferredResolver
-import sangria.federation.v1.Federation
+import sangria.federation.v2.Federation
 import sangria.schema.Schema
 
 import scala.concurrent.ExecutionContext
