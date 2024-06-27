@@ -3,7 +3,7 @@ package state
 import io.circe.Json
 import io.circe.generic.semiauto.deriveDecoder
 import sangria.execution.deferred.{Fetcher, HasId}
-import sangria.federation.v1.{Decoder, Directives, EntityResolver}
+import sangria.federation.v2.{Decoder, Directives, EntityResolver}
 import sangria.schema.{
   Argument,
   Field,

@@ -15,12 +15,12 @@ cd router
 
 ### Using the exposed GraphQL endpoint
 
-The public GraphQL schema is exposed, by the federation gateway, under: http://localhost:9080/
+The public GraphQL schema is exposed, by the federation gateway, under: http://localhost:4000/
 
 Example of queries:
 ```
 {
-  reviews {
+  reviews(ids: [34, 54]) {
     id
     key
     state {
