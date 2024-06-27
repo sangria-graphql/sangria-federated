@@ -137,7 +137,7 @@ object Federation {
 
                       any.fields.decode[resolver.Arg](resolver.decoder) match {
                         case Right(value) => resolver.resolve(value, ctx)
-                        case Left(_) => LeafAction(None)
+                        case Left(e) => throw e
                       }
                     })
                   })
