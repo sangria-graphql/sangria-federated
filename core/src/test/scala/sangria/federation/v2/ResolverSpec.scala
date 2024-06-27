@@ -204,6 +204,36 @@ class ResolverSpec extends AnyWordSpec with Matchers {
          |  }
          |}""".stripMargin)
     }
+
+    "handles non-parsable arguments" in {
+      val testApp = AppWithResolvers()
+
+      val args: Json = parse(s"""
+          {
+            "representations": [
+              { "__typename": "State", "id": 1 },
+              { "__typename": "State", "id": "bla bla" }
+            ]
+          }
+        """).getOrElse(Json.Null)
+
+      val result = testApp.execute(fetchStateAndReview, args)
+
+      QueryRenderer.renderPretty(result) should be("""{
+        |  data: null
+        |  errors: [{
+        |    message: "Internal server error"
+        |    path: ["_entities"]
+        |    locations: [{
+        |      line: 3
+        |      column: 8
+        |    }]
+        |  }]
+        |}""".stripMargin)
+
+      testApp.testApp.db.stateDbCalled.get() should be(0)
+      testApp.testApp.db.reviewDbCalled.get() should be(0)
+    }
   }
 }
 
