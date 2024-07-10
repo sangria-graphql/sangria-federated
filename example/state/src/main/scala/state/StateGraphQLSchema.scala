@@ -47,5 +47,5 @@ object StateGraphQLSchema {
   implicit val decoder: Decoder[Json, StateArg] = deriveDecoder[StateArg].decodeJson(_)
   val stateResolver = EntityResolver[StateContext, Json, State, StateArg](
     __typeName = StateType.name,
-    (arg, _) => states.deferOpt(arg.id))
+    arg => _ => states.deferOpt(arg.id))
 }

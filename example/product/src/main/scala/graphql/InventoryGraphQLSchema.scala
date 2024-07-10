@@ -29,6 +29,6 @@ object InventoryGraphQLSchema {
   def inventoryResolver: EntityResolver[AppContext, Json] { type Arg = InventoryArgs } =
     EntityResolver[AppContext, Json, Inventory, InventoryArgs](
       __typeName = InventoryType.name,
-      (arg, ctx) => ctx.ctx.productService.inventory(arg.id)
+      arg => _.ctx.productService.inventory(arg.id)
     )(decoder)
 }

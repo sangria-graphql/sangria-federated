@@ -154,26 +154,25 @@ object ProductGraphQLSchema {
   def productResearchResolver: EntityResolver[AppContext, Json] { type Arg = ProductResearchArgs } =
     EntityResolver[AppContext, Json, ProductResearch, ProductResearchArgs](
       ProductResearchType.name,
-      (arg, ctx) => ctx.ctx.productResearchService.productResearch(arg.study.caseNumber)
+      arg => _.ctx.productResearchService.productResearch(arg.study.caseNumber)
     )
 
   def productResolver: EntityResolver[AppContext, Json] { type Arg = ProductArgs } =
     EntityResolver[AppContext, Json, Product, ProductArgs](
       ProductType.name,
-      (arg, ctx) =>
-        arg match {
-          case ProductArgs.IdOnly(id) => ctx.ctx.productService.product(id)
-          case ProductArgs.SkuAndPackage(sku, pack) =>
-            ctx.ctx.productService.bySkuAndPackage(sku, pack)
-          case ProductArgs.SkuAndVariationId(sku, variation) =>
-            ctx.ctx.productService.bySkuAndProductVariantionId(sku, variation)
-        }
+      {
+        case ProductArgs.IdOnly(id) => _.ctx.productService.product(id)
+        case ProductArgs.SkuAndPackage(sku, pack) =>
+          _.ctx.productService.bySkuAndPackage(sku, pack)
+        case ProductArgs.SkuAndVariationId(sku, variation) =>
+          _.ctx.productService.bySkuAndProductVariantionId(sku, variation)
+      }
     )
 
   def deprecatedProductResolver
       : EntityResolver[AppContext, Json] { type Arg = DeprecatedProductArgs } =
     EntityResolver[AppContext, Json, DeprecatedProduct, DeprecatedProductArgs](
       DeprecatedProductType.name,
-      (arg, ctx) => ctx.ctx.productService.deprecatedProduct(arg.sku, arg.`package`)
+      arg => _.ctx.productService.deprecatedProduct(arg.sku, arg.`package`)
     )
 }

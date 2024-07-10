@@ -50,6 +50,6 @@ object UserGraphQLSchema {
   def userResolver: EntityResolver[AppContext, Json] { type Arg = UserArgs } =
     EntityResolver[AppContext, Json, User, UserArgs](
       __typeName = UserType.name,
-      (arg, ctx) => ctx.ctx.userService.user(arg.email)
+      arg => _.ctx.userService.user(arg.email)
     )
 }
