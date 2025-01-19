@@ -1,6 +1,6 @@
 addSbtPlugin("com.github.sbt" % "sbt-github-actions" % "0.24.0")
 addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.9.2")
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.4")
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.10.0")
 
 // https://github.com/scalapb/ScalaPB
