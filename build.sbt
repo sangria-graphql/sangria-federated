@@ -6,7 +6,8 @@ inThisBuild(
     licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
     developers := List(
       Developer("xsoufiane", "Soufiane Maguerra", "", url("https://github.com/xsoufiane")),
-      Developer("yanns", "Yann Simon", "", url("https://github.com/yanns"))),
+      Developer("yanns", "Yann Simon", "", url("https://github.com/yanns"))
+    ),
     scmInfo := Some(
       ScmInfo(
         browseUrl = url("https://github.com/sangria-graphql/sangria-federated"),
