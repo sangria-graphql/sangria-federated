@@ -82,7 +82,6 @@ lazy val exampleProduct = exampleProject("example-product")
     Dependencies.http4sEmberServer,
     Dependencies.http4sCirce,
     Dependencies.http4sDsl,
-    Dependencies.circeOptics,
     Dependencies.circeGeneric,
     Dependencies.circeCore
   ))
@@ -100,7 +99,6 @@ lazy val exampleCommon = exampleProject("example-common")
       Dependencies.http4sEmberServer,
       Dependencies.http4sCirce,
       Dependencies.http4sDsl,
-      Dependencies.circeOptics,
       Dependencies.sangria,
       Dependencies.sangriaCirce
     )
