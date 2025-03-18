@@ -24,5 +24,4 @@ object Dependencies {
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
   val weaver = "com.disneystreaming" %% "weaver-cats" % "0.8.4"
-  val fs2Process = "eu.monniot" %% "fs2-process" % "0.4.4"
 }
