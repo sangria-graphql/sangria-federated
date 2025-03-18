@@ -16,8 +16,10 @@ inThisBuild(
   )
 )
 
+val isScala3 = Def.setting(scalaBinaryVersion.value == "3")
+
 // Build
-ThisBuild / crossScalaVersions := Seq("2.12.20", "2.13.16")
+ThisBuild / crossScalaVersions := Seq("2.12.20", "2.13.16", "3.3.4")
 ThisBuild / scalaVersion := crossScalaVersions.value.last
 ThisBuild / githubWorkflowBuildPreamble ++= List(
   WorkflowStep.Sbt(List("scalafmtCheckAll"), name = Some("Check formatting"))
@@ -124,7 +126,10 @@ def newProject(name: String) =
 
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq("-deprecation", "-feature"),
-  scalacOptions += "-target:jvm-1.8",
+  scalacOptions ++= {
+    if (scalaVersion.value.startsWith("2.12")) Seq.empty
+    else Seq("-release", "8")
+  },
   javacOptions ++= Seq("-source", "8", "-target", "8")
 )
 

@@ -9,7 +9,7 @@ import sangria.execution.deferred.{DeferredResolver, Fetcher, HasId}
 import sangria.execution.{Executor, VariableCoercionError}
 import sangria.federation._
 import sangria.federation.v2.Directives.Key
-import sangria.macros.LiteralGraphQLStringContext
+import sangria.macros._
 import sangria.parser.QueryParser
 import sangria.renderer.{QueryRenderer, SchemaRenderer}
 import sangria.schema._

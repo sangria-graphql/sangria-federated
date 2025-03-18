@@ -6,7 +6,7 @@ import sangria.ast
 import sangria.federation.importFederationDirective
 import sangria.federation.v2.ComposeDirectiveSpec.{helloDirective, initialSchema, myDirective}
 import sangria.federation.v2.Directives.{ComposeDirective, Link}
-import sangria.macros.LiteralGraphQLStringContext
+import sangria.macros._
 import sangria.renderer.SchemaRenderer
 import sangria.schema._
 import sangria.util.tag.@@

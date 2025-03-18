@@ -11,7 +11,7 @@ package object federation {
   val spec: String = "https://specs.apollo.dev/federation/v2.3"
 
   def beCompatibleWith(expectedSchema: Schema[_, _]): Matcher[Schema[_, _]] =
-    Matcher { schema: Schema[_, _] =>
+    Matcher { (schema: Schema[_, _]) =>
       val changes = schema.compare(expectedSchema)
 
       MatchResult(
@@ -24,7 +24,7 @@ package object federation {
   private def pretty(v: Vector[_]): String = v.mkString("\n - ", "\n - ", "")
 
   def importFederationDirective(name: String): Matcher[Schema[_, _]] =
-    Matcher { schema: Schema[_, _] =>
+    Matcher { (schema: Schema[_, _]) =>
       val links = schema.astDirectives.filter(d => d.name == "link")
       val link = links.find(d =>
         d.arguments.exists(arg => arg.name == "url" && arg.value == ast.StringValue(spec)))
@@ -61,7 +61,7 @@ package object federation {
     }
 
   def renderLike(expected: String): Matcher[ast.Directive] =
-    Matcher { directive: ast.Directive =>
+    Matcher { (directive: ast.Directive) =>
       val rendered = QueryRenderer.renderPretty(directive)
       be(expected)(rendered)
     }

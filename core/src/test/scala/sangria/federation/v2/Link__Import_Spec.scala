@@ -5,11 +5,13 @@ import io.circe.parser._
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import sangria.marshalling.InputUnmarshaller
 import sangria.validation.Violation
 
 class Link__Import_Spec extends AnyWordSpec with Matchers with EitherValues {
 
-  implicit val um = Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
+  private implicit val um: InputUnmarshaller[Json] =
+    Federation.upgrade(sangria.marshalling.circe.CirceInputUnmarshaller)
 
   "Scalar Link__Import coercion (https://specs.apollo.dev/link/v1.0/#example-import-a-string-name)" should {
     "accept a string" in {

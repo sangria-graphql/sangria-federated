@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 import reports.Trace
 import sangria.execution.Executor
-import sangria.macros.LiteralGraphQLStringContext
+import sangria.macros._
 import sangria.marshalling.ScalaInput
 import sangria.marshalling.circe._
 

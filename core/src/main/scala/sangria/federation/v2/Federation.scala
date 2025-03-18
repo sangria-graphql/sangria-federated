@@ -1,6 +1,7 @@
 package sangria.federation.v2
 
 import sangria.ast
+import sangria.federation.v2._Any
 import sangria.federation.v2.Directives.{ComposeDirective, Link}
 import sangria.marshalling.InputUnmarshaller
 import sangria.renderer.SchemaFilter
@@ -128,8 +129,8 @@ object Federation {
               "Query" -> Map(
                 "_service" -> (_ => _Service(sdl)),
                 "_entities" -> (ctx =>
-                  ctx.withArgs(representationsArg) { anys =>
-                    Action.sequence(anys.map { any =>
+                  ctx.withArgs(representationsArg) { (anys: Seq[_Any[Node]]) =>
+                    Action.sequence(anys.map { (any: _Any[Node]) =>
                       val typeName = any.__typename
                       val resolver = resolversMap.getOrElse(
                         typeName,

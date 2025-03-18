@@ -10,7 +10,7 @@ import sangria.ast.Document
 import sangria.execution.{Executor, VariableCoercionError}
 import sangria.federation._
 import sangria.federation.v1.Directives.Key
-import sangria.macros.LiteralGraphQLStringContext
+import sangria.macros._
 import sangria.parser.QueryParser
 import sangria.renderer.QueryRenderer
 import sangria.schema._
