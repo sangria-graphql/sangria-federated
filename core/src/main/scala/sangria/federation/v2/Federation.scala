@@ -152,8 +152,7 @@ object Federation {
               Link__Purpose.Type)
           )
         )
-    }).copy(directives =
-      Directives.Link.definition :: federationDirectives ::: extendedSchema.directives)
+    }).copy(directives = Directives.Link.definition :: extendedSchema.directives)
   }
 
   def upgrade[Node](default: InputUnmarshaller[Node]): InputUnmarshaller[Node] =
