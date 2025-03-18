@@ -17,7 +17,7 @@ inThisBuild(
 )
 
 // Build
-ThisBuild / crossScalaVersions := Seq("2.12.20", "2.13.15")
+ThisBuild / crossScalaVersions := Seq("2.12.20", "2.13.16")
 ThisBuild / scalaVersion := crossScalaVersions.value.last
 ThisBuild / githubWorkflowBuildPreamble ++= List(
   WorkflowStep.Sbt(List("scalafmtCheckAll"), name = Some("Check formatting"))
