@@ -3,7 +3,6 @@ package common
 import cats.effect._
 import cats.implicits._
 import io.circe._
-import io.circe.optics.JsonPath._
 import sangria.ast
 import sangria.execution._
 import sangria.execution.deferred.DeferredResolver
@@ -28,10 +27,6 @@ trait GraphQL[F[_], Ctx] {
 }
 
 object GraphQL {
-
-  private val queryStringLens = root.query.string
-  private val operationNameLens = root.operationName.string
-  private val variablesLens = root.variables.obj
 
   def apply[F[_], Ctx](
       schema: Schema[Ctx, Any],
@@ -73,19 +68,18 @@ object GraphQL {
           }
         } yield result
 
-      def query(request: Json, middleware: List[Middleware[Ctx]]): F[Either[Json, Json]] = {
-        val queryString = queryStringLens.getOption(request)
-        val operationName = operationNameLens.getOption(request)
-        val variables =
-          Json.fromJsonObject(variablesLens.getOption(request).getOrElse(JsonObject()))
-
-        queryString match {
-          case Some(qs) => query(qs, operationName, variables, middleware)
-          case None => fail(GraphQLError("No 'query' property was present in the request."))
+      override def query(request: Json, middleware: List[Middleware[Ctx]]): F[Either[Json, Json]] =
+        request.hcursor.downField("query").as[String] match {
+          case Right(qs) =>
+            val operationName =
+              request.hcursor.downField("operationName").as[Option[String]].getOrElse(None)
+            val variables =
+              request.hcursor.downField("variables").as[Json].getOrElse(Json.obj())
+            query(qs, operationName, variables, middleware)
+          case Left(_) => fail(GraphQLError("No 'query' property was present in the request."))
         }
-      }
 
-      def query(
+      override def query(
           query: String,
           operationName: Option[String],
           variables: Json,
