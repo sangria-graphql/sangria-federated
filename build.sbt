@@ -107,7 +107,7 @@ lazy val exampleCommon = exampleProject("example-common")
 lazy val exampleTest = exampleProject("example-test")
   .dependsOn(exampleReview, exampleState)
   .settings(
-    libraryDependencies ++= Seq(Dependencies.weaver, Dependencies.fs2Process).map(_ % Test),
+    libraryDependencies ++= Seq(Dependencies.weaver).map(_ % Test),
     testFrameworks += new TestFramework("weaver.framework.CatsEffect")
   )
 
