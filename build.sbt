@@ -19,7 +19,7 @@ inThisBuild(
 val isScala3 = Def.setting(scalaBinaryVersion.value == "3")
 
 // Build
-ThisBuild / crossScalaVersions := Seq("2.12.20", "2.13.16", "3.3.4")
+ThisBuild / crossScalaVersions := Seq("2.12.20", "2.13.16", "3.3.6")
 ThisBuild / scalaVersion := crossScalaVersions.value.last
 ThisBuild / githubWorkflowBuildPreamble ++= List(
   WorkflowStep.Sbt(List("scalafmtCheckAll"), name = Some("Check formatting"))
