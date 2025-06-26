@@ -23,5 +23,5 @@ object Dependencies {
   val scalaTest = "org.scalatest" %% "scalatest" % "3.2.19"
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
-  val weaver = "org.typelevel" %% "weaver-cats" % "0.9.0"
+  val weaver = "org.typelevel" %% "weaver-cats" % "0.9.1"
 }
