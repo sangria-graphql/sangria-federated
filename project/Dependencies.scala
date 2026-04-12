@@ -20,7 +20,7 @@ object Dependencies {
   val circeGeneric = "io.circe" %% "circe-generic" % V.circe
   val circeParser = "io.circe" %% "circe-parser" % V.circe
 
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.19"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
   val weaver = "org.typelevel" %% "weaver-cats" % "0.12.0"
