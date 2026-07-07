@@ -111,8 +111,11 @@ object Federation {
       else
         federationDirectives
 
+    val minorVersion: Int =
+      (0 :: importedDirectives.map(d => minorVersionOf.getOrElse(d.name, 0))).max
+
     val federationV2Link = Directives.Link(
-      url = "https://specs.apollo.dev/federation/v2.9",
+      url = s"https://specs.apollo.dev/federation/v2.$minorVersion",
       `import` = Some(importedDirectives.map(d => Link__Import("@" + d.name)).toVector)
     )
 
@@ -176,6 +179,21 @@ object Federation {
         )
     }).copy(directives = Directives.Link.definition :: extendedSchema.directives)
   }
+
+  /** Minor version of the [[https://specs.apollo.dev/federation/ federation spec]] that first
+    * introduced each directive. Directives not listed here are available since `v2.0`.
+    */
+  private val minorVersionOf: Map[String, Int] = Map(
+    (Directives.ComposeDirective.definition: Directive).name -> 1,
+    Directives.InterfaceObjectDefinition.name -> 3,
+    Directives.AuthenticatedDefinition.name -> 5,
+    Directives.RequiresScopes.definition.name -> 5,
+    Directives.Policy.definition.name -> 6,
+    Directives.Context.definition.name -> 8,
+    Directives.FromContext.definition.name -> 8,
+    Directives.Cost.definition.name -> 9,
+    Directives.ListSize.definition.name -> 9
+  )
 
   /** Collects the names of all directives applied anywhere in the given schema (on types, fields,
     * arguments, enum values and input fields), so that only the federation directives that are
