@@ -90,5 +90,58 @@ class DirectivesSpec extends AnyWordSpec {
       // https://www.apollographql.com/docs/federation/federated-types/federated-directives#tag
       Directives.Tag(name = "team-admin") must renderLike("""@tag(name: "team-admin")""")
     }
+
+    "support @authenticated directive" in {
+      // https://www.apollographql.com/docs/graphos/reference/federation/directives#authenticated
+      Directives.Authenticated must renderLike("@authenticated")
+    }
+
+    "support @requiresScopes directive" in {
+      // https://www.apollographql.com/docs/graphos/reference/federation/directives#requiresscopes
+      Directives.RequiresScopes(Vector(Vector("scope1", "scope2"), Vector("scope3"))) must
+        renderLike("""@requiresScopes(scopes: [["scope1", "scope2"], ["scope3"]])""")
+    }
+
+    "support @policy directive" in {
+      // https://www.apollographql.com/docs/graphos/reference/federation/directives#policy
+      Directives.Policy(Vector(Vector("policy1", "policy2"), Vector("policy3"))) must
+        renderLike("""@policy(policies: [["policy1", "policy2"], ["policy3"]])""")
+    }
+
+    "support @context directive" in {
+      // https://www.apollographql.com/docs/graphos/reference/federation/directives#context
+      Directives.Context(name = "userContext") must renderLike("""@context(name: "userContext")""")
+    }
+
+    "support @fromContext directive" in {
+      // https://www.apollographql.com/docs/graphos/reference/federation/directives#fromcontext
+      Directives.FromContext(field = "$userContext { prop }") must
+        renderLike("""@fromContext(field: "$userContext { prop }")""")
+    }
+
+    "support @cost directive" in {
+      // https://www.apollographql.com/docs/graphos/reference/federation/directives#cost
+      Directives.Cost(weight = 5) must renderLike("""@cost(weight: 5)""")
+    }
+
+    "support @listSize directive" in {
+      // https://www.apollographql.com/docs/graphos/reference/federation/directives#listsize
+      Directives.ListSize() must renderLike("@listSize")
+      Directives.ListSize(assumedSize = Some(10)) must
+        renderLike("""@listSize(assumedSize: 10)""")
+      Directives.ListSize(slicingArguments = Some(Vector("first", "last"))) must
+        renderLike("""@listSize(slicingArguments: ["first", "last"])""")
+      Directives.ListSize(sizedFields = Some(Vector("page"))) must
+        renderLike("""@listSize(sizedFields: ["page"])""")
+      Directives.ListSize(requireOneSlicingArgument = Some(false)) must
+        renderLike("""@listSize(requireOneSlicingArgument: false)""")
+      Directives.ListSize(
+        assumedSize = Some(10),
+        slicingArguments = Some(Vector("first", "last")),
+        sizedFields = Some(Vector("page")),
+        requireOneSlicingArgument = Some(true)
+      ) must renderLike(
+        """@listSize(assumedSize: 10, slicingArguments: ["first", "last"], sizedFields: ["page"], requireOneSlicingArgument: true)""")
+    }
   }
 }
