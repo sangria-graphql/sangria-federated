@@ -23,12 +23,12 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        scala: [2.12.20, 2.13.16, 3.3.8]
+        scala: [2.12.21, 2.13.18, 3.3.8]
         java: [zulu@8]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout current branch (full)
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -44,19 +44,19 @@ jobs:
         uses: sbt/setup-sbt@v1
 
       - name: Check formatting
-        run: sbt '++ ${{ matrix.scala }}' scalafmtCheckAll
+        run: sbt '++ ${{ matrix.scala }}; scalafmtCheckAll'
 
       - name: Check that workflows are up to date
-        run: sbt '++ ${{ matrix.scala }}' githubWorkflowCheck
+        run: sbt '++ ${{ matrix.scala }}; githubWorkflowCheck'
 
       - name: Build project
-        run: sbt '++ ${{ matrix.scala }}' test
+        run: sbt '++ ${{ matrix.scala }}; test'
 
       - name: Compress target directories
         run: tar cf targets.tar example/state/target example/review/target target example/test/target example/common/target example/product/target core/target project/target
 
       - name: Upload target directories
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: target-${{ matrix.os }}-${{ matrix.scala }}-${{ matrix.java }}
           path: targets.tar
@@ -73,7 +73,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout current branch (full)
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -88,28 +88,28 @@ jobs:
       - name: Setup sbt
         uses: sbt/setup-sbt@v1
 
-      - name: Download target directories (2.12.20)
-        uses: actions/download-artifact@v5
+      - name: Download target directories (2.12.21)
+        uses: actions/download-artifact@v8
         with:
-          name: target-${{ matrix.os }}-2.12.20-${{ matrix.java }}
+          name: target-${{ matrix.os }}-2.12.21-${{ matrix.java }}
 
-      - name: Inflate target directories (2.12.20)
+      - name: Inflate target directories (2.12.21)
         run: |
           tar xf targets.tar
           rm targets.tar
 
-      - name: Download target directories (2.13.16)
-        uses: actions/download-artifact@v5
+      - name: Download target directories (2.13.18)
+        uses: actions/download-artifact@v8
         with:
-          name: target-${{ matrix.os }}-2.13.16-${{ matrix.java }}
+          name: target-${{ matrix.os }}-2.13.18-${{ matrix.java }}
 
-      - name: Inflate target directories (2.13.16)
+      - name: Inflate target directories (2.13.18)
         run: |
           tar xf targets.tar
           rm targets.tar
 
       - name: Download target directories (3.3.8)
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: target-${{ matrix.os }}-3.3.8-${{ matrix.java }}
 

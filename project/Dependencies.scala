@@ -9,7 +9,7 @@ object Dependencies {
 
   val sangria = "org.sangria-graphql" %% "sangria" % "4.2.15"
   val sangriaCirce = "org.sangria-graphql" %% "sangria-circe" % "1.3.2"
-  val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.5.32"
+  val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.5.37"
 
   val catsEffect = "org.typelevel" %% "cats-effect" % "3.6.3"
   val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % V.http4s
@@ -23,5 +23,5 @@ object Dependencies {
   val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
-  val weaver = "org.typelevel" %% "weaver-cats" % "0.12.0"
+  val weaver = "org.typelevel" %% "weaver-cats" % "0.13.0"
 }
