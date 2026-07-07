@@ -37,7 +37,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key", "@interfaceObject", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag", "@authenticated", "@requiresScopes", "@policy", "@context", "@fromContext", "@cost", "@listSize"]) {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: []) {
               query: Query
             }
 
@@ -51,12 +51,6 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _Any
 
             scalar link__Import
-
-            scalar federation__Scope
-
-            scalar federation__Policy
-
-            scalar federation__ContextFieldValue
 
             enum link__Purpose {
               "`SECURITY` features provide metadata necessary to securely resolve fields."
@@ -105,7 +99,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key", "@interfaceObject", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag", "@authenticated", "@requiresScopes", "@policy", "@context", "@fromContext", "@cost", "@listSize"]) {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key"]) {
               query: Query
             }
 
@@ -133,12 +127,6 @@ class FederationSpec extends AsyncFreeSpec {
 
             scalar link__Import
 
-            scalar federation__Scope
-
-            scalar federation__Policy
-
-            scalar federation__ContextFieldValue
-
             enum link__Purpose {
               "`SECURITY` features provide metadata necessary to securely resolve fields."
               SECURITY
@@ -155,6 +143,107 @@ class FederationSpec extends AsyncFreeSpec {
           """)
 
         schema should beCompatibleWith(expectedSubGraphSchema)
+      }
+
+      "only imports the federation directives that are actually used" in {
+        import sangria.federation.v2.Directives._
+
+        case class Widget(id: Int)
+
+        val WidgetType = ObjectType(
+          "Widget",
+          fields[Unit, Widget](
+            Field(
+              "id",
+              IntType,
+              resolve = (ctx: Context[Unit, Widget]) => ctx.value.id,
+              astDirectives = Vector(Tag("internal")))
+          )
+        ).withDirective(Shareable)
+
+        val QueryType = ObjectType(
+          "Query",
+          fields[Unit, Any](
+            Field("widget", OptionType(WidgetType), resolve = _ => None)
+          )
+        )
+
+        val schema = Federation.extend(sangria.schema.Schema(QueryType), Nil)
+
+        SchemaRenderer.renderSchema(schema) should include(
+          """@link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@shareable", "@tag"])""")
+      }
+
+      "only imports the federation__Scope scalar when @requiresScopes is used" in {
+        import sangria.federation.v2.Directives._
+
+        val QueryType = ObjectType(
+          "Query",
+          fields[Unit, Any](
+            Field(
+              "field",
+              IntType,
+              resolve = _ => 0,
+              astDirectives = Vector(RequiresScopes(Vector(Vector("scope1")))))
+          )
+        )
+
+        val rendered =
+          SchemaRenderer.renderSchema(Federation.extend(sangria.schema.Schema(QueryType), Nil))
+
+        rendered should include(
+          """@link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@requiresScopes"])""")
+        rendered should include("scalar federation__Scope")
+        (rendered should not).include("scalar federation__Policy")
+        (rendered should not).include("scalar federation__ContextFieldValue")
+      }
+
+      "only imports the federation__Policy scalar when @policy is used" in {
+        import sangria.federation.v2.Directives._
+
+        val QueryType = ObjectType(
+          "Query",
+          fields[Unit, Any](
+            Field(
+              "field",
+              IntType,
+              resolve = _ => 0,
+              astDirectives = Vector(Policy(Vector(Vector("policy1")))))
+          )
+        )
+
+        val rendered =
+          SchemaRenderer.renderSchema(Federation.extend(sangria.schema.Schema(QueryType), Nil))
+
+        rendered should include(
+          """@link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@policy"])""")
+        rendered should include("scalar federation__Policy")
+        (rendered should not).include("scalar federation__Scope")
+        (rendered should not).include("scalar federation__ContextFieldValue")
+      }
+
+      "only imports the federation__ContextFieldValue scalar when @fromContext is used" in {
+        import sangria.federation.v2.Directives._
+
+        val arg: Argument[Option[String]] = Argument("arg", OptionInputType(StringType))
+        val argWithDirective: Argument[Option[String]] =
+          arg.withDirective(FromContext("$something { prop }"))
+
+        val QueryType = ObjectType(
+          "Query",
+          fields[Unit, Any](
+            Field("field", IntType, arguments = List(argWithDirective), resolve = _ => 0)
+          )
+        )
+
+        val rendered =
+          SchemaRenderer.renderSchema(Federation.extend(sangria.schema.Schema(QueryType), Nil))
+
+        rendered should include(
+          """@link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@fromContext"])""")
+        rendered should include("scalar federation__ContextFieldValue")
+        (rendered should not).include("scalar federation__Scope")
+        (rendered should not).include("scalar federation__Policy")
       }
     }
 
@@ -189,7 +278,7 @@ class FederationSpec extends AsyncFreeSpec {
             .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\", \"@authenticated\", \"@requiresScopes\", \"@policy\", \"@context\", \"@fromContext\", \"@cost\", \"@listSize\"]) {\n  query: Query\n}\n\ntype Query {\n  field: Int\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: []) {\n  query: Query\n}\n\ntype Query {\n  field: Int\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
@@ -219,7 +308,7 @@ class FederationSpec extends AsyncFreeSpec {
             .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\", \"@authenticated\", \"@requiresScopes\", \"@policy\", \"@context\", \"@fromContext\", \"@cost\", \"@listSize\"]) {\n  query: Query\n}\n\ntype Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: [\"@key\"]) {\n  query: Query\n}\n\ntype Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
@@ -246,7 +335,7 @@ class FederationSpec extends AsyncFreeSpec {
           .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\", \"@authenticated\", \"@requiresScopes\", \"@policy\", \"@context\", \"@fromContext\", \"@cost\", \"@listSize\"]) {\n  query: Query\n}\n\n\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: []) {\n  query: Query\n}\n\n\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
