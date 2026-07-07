@@ -9,7 +9,7 @@ object Dependencies {
 
   val sangria = "org.sangria-graphql" %% "sangria" % "4.2.15"
   val sangriaCirce = "org.sangria-graphql" %% "sangria-circe" % "1.3.2"
-  val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.5.20"
+  val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.5.37"
 
   val catsEffect = "org.typelevel" %% "cats-effect" % "3.6.3"
   val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % V.http4s
@@ -20,8 +20,8 @@ object Dependencies {
   val circeGeneric = "io.circe" %% "circe-generic" % V.circe
   val circeParser = "io.circe" %% "circe-parser" % V.circe
 
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.19"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   val scalapbRuntime =
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
-  val weaver = "org.typelevel" %% "weaver-cats" % "0.10.1"
+  val weaver = "org.typelevel" %% "weaver-cats" % "0.13.0"
 }
