@@ -77,6 +77,8 @@ object Federation {
       case obj: ObjectType[Ctx, _] @unchecked if obj.astDirectives.exists(_.name == "key") => obj
     }.toList
 
+    val usedDirectiveNames: Set[String] = usedDirectives(schema)
+
     val federationDirectives: List[Directive] = List(
       Directives.Key.definition,
       Directives.InterfaceObjectDefinition,
@@ -95,7 +97,13 @@ object Federation {
       Directives.FromContext.definition,
       Directives.Cost.definition,
       Directives.ListSize.definition
-    )
+    ).filter(d => usedDirectiveNames.contains(d.name))
+
+    val conditionalScalarTypes: List[Type with Named] = List(
+      usedDirectiveNames.contains("requiresScopes") -> Federation__Scope.Type,
+      usedDirectiveNames.contains("policy") -> Federation__Policy.Type,
+      usedDirectiveNames.contains("fromContext") -> Federation__ContextFieldValue.Type
+    ).collect { case (true, tpe) => tpe }
 
     val importedDirectives: List[Directive] =
       if (composeDirectives.nonEmpty)
@@ -120,15 +128,14 @@ object Federation {
           ast.Document(Vector(queryType(_service))),
           AstSchemaBuilder.resolverBased[Ctx](
             FieldResolver.map("Query" -> Map("_service" -> (_ => _Service(sdl)))),
-            AdditionalTypes(
-              _Any.__type[Node],
-              Link__Import.Type,
-              _Service.Type,
-              _FieldSet.Type,
-              Link__Purpose.Type,
-              Federation__Scope.Type,
-              Federation__Policy.Type,
-              Federation__ContextFieldValue.Type
+            AdditionalTypes[Ctx](
+              (List[Type with Named](
+                _Any.__type[Node],
+                Link__Import.Type,
+                _Service.Type,
+                _FieldSet.Type,
+                Link__Purpose.Type
+              ) ++ conditionalScalarTypes): _*
             )
           )
         )
@@ -155,20 +162,53 @@ object Federation {
                   })
               )
             ),
-            AdditionalTypes(
-              _Any.__type[Node],
-              Link__Import.Type,
-              _Service.Type,
-              _Entity(entities),
-              _FieldSet.Type,
-              Link__Purpose.Type,
-              Federation__Scope.Type,
-              Federation__Policy.Type,
-              Federation__ContextFieldValue.Type
+            AdditionalTypes[Ctx](
+              (List[Type with Named](
+                _Any.__type[Node],
+                Link__Import.Type,
+                _Service.Type,
+                _Entity(entities),
+                _FieldSet.Type,
+                Link__Purpose.Type
+              ) ++ conditionalScalarTypes): _*
             )
           )
         )
     }).copy(directives = Directives.Link.definition :: extendedSchema.directives)
+  }
+
+  /** Collects the names of all directives applied anywhere in the given schema (on types, fields,
+    * arguments, enum values and input fields), so that only the federation directives that are
+    * actually used need to be imported via `@link`.
+    */
+  private def usedDirectives[Ctx, Val](schema: Schema[Ctx, Val]): Set[String] = {
+    val names = Set.newBuilder[String]
+
+    def addAll(directives: Iterable[ast.Directive]): Unit = names ++= directives.map(_.name)
+
+    def addField(field: Field[Ctx, _]): Unit = {
+      addAll(field.astDirectives)
+      field.arguments.foreach(a => addAll(a.astDirectives))
+    }
+
+    schema.allTypes.values.foreach {
+      case t: ObjectType[Ctx, _] @unchecked =>
+        addAll(t.astDirectives)
+        t.ownFields.foreach(addField)
+      case t: InterfaceType[Ctx, _] @unchecked =>
+        addAll(t.astDirectives)
+        t.ownFields.foreach(addField)
+      case t: InputObjectType[_] =>
+        addAll(t.astDirectives)
+        t.fields.foreach(f => addAll(f.astDirectives))
+      case t: EnumType[_] =>
+        addAll(t.astDirectives)
+        t.values.foreach(v => addAll(v.astDirectives))
+      case t: HasAstInfo => addAll(t.astDirectives)
+      case _ => ()
+    }
+
+    names.result()
   }
 
   def upgrade[Node](default: InputUnmarshaller[Node]): InputUnmarshaller[Node] =
