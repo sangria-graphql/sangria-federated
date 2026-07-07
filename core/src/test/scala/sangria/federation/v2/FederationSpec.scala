@@ -37,7 +37,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@interfaceObject", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag"]) {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key", "@interfaceObject", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag", "@authenticated", "@requiresScopes", "@policy", "@context", "@fromContext", "@cost", "@listSize"]) {
               query: Query
             }
 
@@ -51,6 +51,12 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _Any
 
             scalar link__Import
+
+            scalar federation__Scope
+
+            scalar federation__Policy
+
+            scalar federation__ContextFieldValue
 
             enum link__Purpose {
               "`SECURITY` features provide metadata necessary to securely resolve fields."
@@ -99,7 +105,7 @@ class FederationSpec extends AsyncFreeSpec {
 
         val expectedSubGraphSchema = Schema
           .buildFromAst(graphql"""
-            schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@interfaceObject", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag"]) {
+            schema @link(url: "https://specs.apollo.dev/federation/v2.9", import: ["@key", "@interfaceObject", "@extends", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@tag", "@authenticated", "@requiresScopes", "@policy", "@context", "@fromContext", "@cost", "@listSize"]) {
               query: Query
             }
 
@@ -126,6 +132,12 @@ class FederationSpec extends AsyncFreeSpec {
             scalar _Any
 
             scalar link__Import
+
+            scalar federation__Scope
+
+            scalar federation__Policy
+
+            scalar federation__ContextFieldValue
 
             enum link__Purpose {
               "`SECURITY` features provide metadata necessary to securely resolve fields."
@@ -177,7 +189,7 @@ class FederationSpec extends AsyncFreeSpec {
             .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.3\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\ntype Query {\n  field: Int\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\", \"@authenticated\", \"@requiresScopes\", \"@policy\", \"@context\", \"@fromContext\", \"@cost\", \"@listSize\"]) {\n  query: Query\n}\n\ntype Query {\n  field: Int\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
@@ -207,7 +219,7 @@ class FederationSpec extends AsyncFreeSpec {
             .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.3\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\ntype Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\", \"@authenticated\", \"@requiresScopes\", \"@policy\", \"@context\", \"@fromContext\", \"@cost\", \"@listSize\"]) {\n  query: Query\n}\n\ntype Query {\n  states: [State]\n}\n\ntype State @key(fields: \"id\") {\n  id: Int\n  value: String\n}"
                 |    }
                 |  }
                 |}""".stripMargin))
@@ -234,7 +246,7 @@ class FederationSpec extends AsyncFreeSpec {
           .map(QueryRenderer.renderPretty(_) should be("""{
                 |  data: {
                 |    _service: {
-                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.3\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\"]) {\n  query: Query\n}\n\n\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
+                |      sdl: "schema @link(url: \"https://specs.apollo.dev/federation/v2.9\", import: [\"@key\", \"@interfaceObject\", \"@extends\", \"@shareable\", \"@inaccessible\", \"@override\", \"@external\", \"@provides\", \"@requires\", \"@tag\", \"@authenticated\", \"@requiresScopes\", \"@policy\", \"@context\", \"@fromContext\", \"@cost\", \"@listSize\"]) {\n  query: Query\n}\n\n\"The `Long` scalar type represents non-fractional signed whole numeric values. Long can represent values between -(2^63) and 2^63 - 1.\"\nscalar Long\n\ntype Query {\n  foo: Long\n  bar: Int\n}"
                 |    }
                 |  }
                 |}""".stripMargin))

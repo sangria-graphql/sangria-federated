@@ -218,6 +218,166 @@ object Directives {
       ast.Directive(name = "tag", arguments = Vector(ast.Argument("name", ast.StringValue(name))))
   }
 
+  /** [@authenticated](https://www.apollographql.com/docs/graphos/reference/federation/directives#authenticated)
+    * directive definition
+    */
+  val AuthenticatedDefinition: Directive = Directive(
+    name = "authenticated",
+    locations = Set(
+      DirectiveLocation.FieldDefinition,
+      DirectiveLocation.Object,
+      DirectiveLocation.Interface,
+      DirectiveLocation.Scalar,
+      DirectiveLocation.Enum
+    )
+  )
+
+  /** [@authenticated](https://www.apollographql.com/docs/graphos/reference/federation/directives#authenticated)
+    * directive
+    */
+  val Authenticated: ast.Directive = ast.Directive(name = "authenticated")
+
+  /** [@requiresScopes](https://www.apollographql.com/docs/graphos/reference/federation/directives#requiresscopes)
+    * directive
+    */
+  object RequiresScopes {
+    val definition: Directive = Directive(
+      name = "requiresScopes",
+      arguments = List(Argument("scopes", ListInputType(ListInputType(Federation__Scope.Type)))),
+      locations = Set(
+        DirectiveLocation.FieldDefinition,
+        DirectiveLocation.Object,
+        DirectiveLocation.Interface,
+        DirectiveLocation.Scalar,
+        DirectiveLocation.Enum
+      )
+    )
+
+    def apply(scopes: Vector[Vector[String]]): ast.Directive =
+      ast.Directive(
+        name = "requiresScopes",
+        arguments = Vector(
+          ast.Argument(
+            "scopes",
+            ast.ListValue(scopes.map(s => ast.ListValue(s.map(ast.StringValue(_)))))))
+      )
+  }
+
+  /** [@policy](https://www.apollographql.com/docs/graphos/reference/federation/directives#policy)
+    * directive
+    */
+  object Policy {
+    val definition: Directive = Directive(
+      name = "policy",
+      arguments = List(Argument("policies", ListInputType(ListInputType(Federation__Policy.Type)))),
+      locations = Set(
+        DirectiveLocation.FieldDefinition,
+        DirectiveLocation.Object,
+        DirectiveLocation.Interface,
+        DirectiveLocation.Scalar,
+        DirectiveLocation.Enum
+      )
+    )
+
+    def apply(policies: Vector[Vector[String]]): ast.Directive =
+      ast.Directive(
+        name = "policy",
+        arguments = Vector(
+          ast.Argument(
+            "policies",
+            ast.ListValue(policies.map(p => ast.ListValue(p.map(ast.StringValue(_)))))))
+      )
+  }
+
+  /** [@context](https://www.apollographql.com/docs/graphos/reference/federation/directives#context)
+    * directive
+    */
+  object Context {
+    val definition: Directive = Directive(
+      name = "context",
+      arguments = List(Argument("name", StringType)),
+      locations =
+        Set(DirectiveLocation.Object, DirectiveLocation.Interface, DirectiveLocation.Union),
+      repeatable = true
+    )
+
+    def apply(name: String): ast.Directive =
+      ast.Directive(
+        name = "context",
+        arguments = Vector(ast.Argument("name", ast.StringValue(name))))
+  }
+
+  /** [@fromContext](https://www.apollographql.com/docs/graphos/reference/federation/directives#fromcontext)
+    * directive
+    */
+  object FromContext {
+    val definition: Directive = Directive(
+      name = "fromContext",
+      arguments = List(Argument("field", OptionInputType(Federation__ContextFieldValue.Type))),
+      locations = Set(DirectiveLocation.ArgumentDefinition)
+    )
+
+    def apply(field: String): ast.Directive =
+      ast.Directive(
+        name = "fromContext",
+        arguments = Vector(ast.Argument("field", ast.StringValue(field))))
+  }
+
+  /** [@cost](https://www.apollographql.com/docs/graphos/reference/federation/directives#cost)
+    * directive
+    */
+  object Cost {
+    val definition: Directive = Directive(
+      name = "cost",
+      arguments = List(Argument("weight", IntType)),
+      locations = Set(
+        DirectiveLocation.ArgumentDefinition,
+        DirectiveLocation.Enum,
+        DirectiveLocation.FieldDefinition,
+        DirectiveLocation.InputFieldDefinition,
+        DirectiveLocation.Object,
+        DirectiveLocation.Scalar
+      )
+    )
+
+    def apply(weight: Int): ast.Directive =
+      ast.Directive(name = "cost", arguments = Vector(ast.Argument("weight", ast.IntValue(weight))))
+  }
+
+  /** [@listSize](https://www.apollographql.com/docs/graphos/reference/federation/directives#listsize)
+    * directive
+    */
+  object ListSize {
+    val definition: Directive = Directive(
+      name = "listSize",
+      arguments = List(
+        Argument("assumedSize", OptionInputType(IntType)),
+        Argument("slicingArguments", OptionInputType(ListInputType(StringType))),
+        Argument("sizedFields", OptionInputType(ListInputType(StringType))),
+        Argument("requireOneSlicingArgument", OptionInputType(BooleanType), defaultValue = true)
+      ),
+      locations = Set(DirectiveLocation.FieldDefinition)
+    )
+
+    def apply(
+        assumedSize: Option[Int] = None,
+        slicingArguments: Option[Vector[String]] = None,
+        sizedFields: Option[Vector[String]] = None,
+        requireOneSlicingArgument: Option[Boolean] = None): ast.Directive =
+      ast.Directive(
+        name = "listSize",
+        arguments = Vector(
+          assumedSize.map(v => ast.Argument("assumedSize", ast.IntValue(v))),
+          slicingArguments.map(v =>
+            ast.Argument("slicingArguments", ast.ListValue(v.map(ast.StringValue(_))))),
+          sizedFields.map(v =>
+            ast.Argument("sizedFields", ast.ListValue(v.map(ast.StringValue(_))))),
+          requireOneSlicingArgument.map(v =>
+            ast.Argument("requireOneSlicingArgument", ast.BooleanValue(v)))
+        ).flatten
+      )
+  }
+
   trait ComposeDirective
 
   /** [@composeDirective](https://www.apollographql.com/docs/federation/federated-types/federated-directives#composedirective)

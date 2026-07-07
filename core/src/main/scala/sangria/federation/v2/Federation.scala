@@ -87,7 +87,14 @@ object Federation {
       Directives.ExternalDefinition,
       Directives.Provides.definition,
       Directives.Requires.definition,
-      Directives.Tag.definition
+      Directives.Tag.definition,
+      Directives.AuthenticatedDefinition,
+      Directives.RequiresScopes.definition,
+      Directives.Policy.definition,
+      Directives.Context.definition,
+      Directives.FromContext.definition,
+      Directives.Cost.definition,
+      Directives.ListSize.definition
     )
 
     val importedDirectives: List[Directive] =
@@ -97,7 +104,7 @@ object Federation {
         federationDirectives
 
     val federationV2Link = Directives.Link(
-      url = "https://specs.apollo.dev/federation/v2.3",
+      url = "https://specs.apollo.dev/federation/v2.9",
       `import` = Some(importedDirectives.map(d => Link__Import("@" + d.name)).toVector)
     )
 
@@ -118,7 +125,11 @@ object Federation {
               Link__Import.Type,
               _Service.Type,
               _FieldSet.Type,
-              Link__Purpose.Type)
+              Link__Purpose.Type,
+              Federation__Scope.Type,
+              Federation__Policy.Type,
+              Federation__ContextFieldValue.Type
+            )
           )
         )
       case entities =>
@@ -150,7 +161,11 @@ object Federation {
               _Service.Type,
               _Entity(entities),
               _FieldSet.Type,
-              Link__Purpose.Type)
+              Link__Purpose.Type,
+              Federation__Scope.Type,
+              Federation__Policy.Type,
+              Federation__ContextFieldValue.Type
+            )
           )
         )
     }).copy(directives = Directives.Link.definition :: extendedSchema.directives)
