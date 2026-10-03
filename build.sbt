@@ -21,6 +21,7 @@ val isScala3 = Def.setting(scalaBinaryVersion.value == "3")
 // Build
 ThisBuild / crossScalaVersions := Seq("2.12.21", "2.13.18", "3.3.8")
 ThisBuild / scalaVersion := crossScalaVersions.value.last
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.zulu("17"))
 ThisBuild / githubWorkflowBuildPreamble ++= List(
   WorkflowStep.Sbt(List("scalafmtCheckAll"), name = Some("Check formatting"))
 )
@@ -44,7 +45,7 @@ ThisBuild / githubWorkflowPublish := Seq(
 
 lazy val root = (project in file("."))
   .settings(
-    name := "sangria-federated",
+    name := "sangria-federated-root",
     description := "Federation for Sangria"
   )
   .settings(noPublishSettings)
