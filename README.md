@@ -101,6 +101,14 @@ subgraphs:
       subgraph_url: http://localhost:9082/api/graphql
 ```
 
+## Apollo Tracing
+
+For the [Apollo Tracing](https://github.com/apollographql/apollo-tracing) format, use the middleware from [sangria-slowlog](https://github.com/sangria-graphql/sangria-slowlog):
+
+```scala
+Executor.execute(schema, query, middleware = SlowLog.apolloTracing :: Nil)
+```
+
 ## Caution 🚨🚨
 
 - **This is a technology preview. We are actively working on it and cannot promise a stable API yet**.
